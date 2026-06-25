@@ -387,26 +387,24 @@ async fn call_openai_stream_api(
     });
 
     let request_body = OpenAIRequest {
-        model: "GLM-4.7-Flash".to_string(),
+        model: "openai/gpt-4.1".to_string(),
         messages,
         temperature: 0.7,
         max_tokens: 16384,
         stream: true, // 启用流式响应
     };
 
+    let github_token = std::env::var("GITHUB_TOKEN")
+        .map_err(|_| "GITHUB_TOKEN environment variable must be set for GitHub Models API")?;
+    if github_token.trim().is_empty() {
+        return Err("GITHUB_TOKEN environment variable must not be empty".into());
+    }
+
     let response = client
-        .post("https://open.bigmodel.cn/api/paas/v4/chat/completions")
-        .header("Authorization", {
-            use std::env;
-            use tracing::log::error;
-
-            let llm_key = env::var("LITHO_BOOK_LLM_KEY").unwrap_or_else(|_| {
-                error!("LITHO_BOOK_LLM_KEY environment variable not set, using empty string");
-                String::new()
-            });
-
-            format!("Bearer {}", llm_key)
-        })
+        .post("https://models.github.ai/inference/chat/completions")
+        .header("Authorization", format!("Bearer {}", github_token))
+        .header("Accept", "application/vnd.github+json")
+        .header("X-GitHub-Api-Version", "2026-03-10")
         .header("Content-Type", "application/json")
         .json(&request_body)
         .send()
@@ -604,4 +602,3 @@ fn load_i18n_map(path: &Path) -> Option<HashMap<String, String>> {
     let content = fs::read_to_string(path).ok()?;
     serde_json::from_str::<HashMap<String, String>>(&content).ok()
 }
-

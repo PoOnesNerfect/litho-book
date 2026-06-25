@@ -3614,10 +3614,10 @@
 
             // 初始化默认上下文
             function initializeDefaultContext() {
-                // 默认添加架构概览文档
+                // Add the architecture overview document by default.
                 selectedContextFiles = [{
-                    name: '2、架构概览.md',
-                    path: '2、架构概览.md'
+                    name: '2-architecture-overview.md',
+                    path: '2-architecture-overview.md'
                 }];
 
                 // 如果有当前文件，也添加到上下文
@@ -3699,7 +3699,7 @@
 
             // 初始化默认文档加载（带降级策略）
             async function initializeDefaultDocument() {
-                const defaultFiles = ['1、项目概述.md', '1.Overview.md', 'README.md', 'Overview.md', '项目概述.md'];
+                const defaultFiles = ['1-project-overview.md', '1.Overview.md', 'README.md', 'Overview.md'];
 
                 for (const fileName of defaultFiles) {
                     try {
@@ -4964,8 +4964,8 @@
                     const isSelected = selectedContextFiles.some(f => f.path === node.path);
                     checkbox.checked = isSelected;
 
-                    // 默认选中架构概览文档
-                    if (node.name === '2、架构概览.md') {
+                    // Select the architecture overview document by default.
+                    if (node.name === '2-architecture-overview.md') {
                         checkbox.checked = true;
                         // 如果还没有添加到选中列表，则添加
                         if (!isSelected) {
@@ -5206,10 +5206,10 @@
 
             // 初始化默认上下文
             function initializeDefaultContext() {
-                // 默认添加架构概览文档
+                // Add the architecture overview document by default.
                 selectedContextFiles = [{
-                    name: '2、架构概览.md',
-                    path: '2、架构概览.md'
+                    name: '2-architecture-overview.md',
+                    path: '2-architecture-overview.md'
                 }];
 
                 // 如果有当前文件，也添加到上下文
@@ -5612,16 +5612,16 @@
                     });
                 }
 
-                // 初始化默认选中的上下文文件（架构概览文档）
+                // Initialize the default selected context file.
                 initializeDefaultContext();
             });
 
             // 初始化默认上下文
             function initializeDefaultContext() {
-                // 默认添加架构概览文档
+                // Add the architecture overview document by default.
                 selectedContextFiles = [{
-                    name: '2、架构概览.md',
-                    path: '2、架构概览.md'
+                    name: '2-architecture-overview.md',
+                    path: '2-architecture-overview.md'
                 }];
 
                 // 更新上下文标签显示

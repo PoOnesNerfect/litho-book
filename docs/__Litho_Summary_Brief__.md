@@ -1,61 +1,61 @@
-# 项目分析摘要报告
+# Project Analysis Summary Report
 
-生成时间: 2025-10-04 09:16:59 UTC
+Generated at: 2025-10-04 09:16:59 UTC
 
-## 执行概览
+## Execution Overview
 
-**总执行时间**: 589.59 秒
-**各阶段耗时**:
-- 文档化: 521.49s (88.4%)
-- 研究调研: 68.03s (11.5%)
-- 预处理: 0.08s (0.0%)
-- 输出: 0.00s (0.0%)
+**Total execution time**: 589.59 seconds
+**Time by phase**:
+- Documentation: 521.49s (88.4%)
+- Research: 68.03s (11.5%)
+- Preprocessing: 0.08s (0.0%)
+- Output: 0.00s (0.0%)
 
-## 缓存效果概览
+## Cache Effect Overview
 
-**缓存命中率**: 100.0% 🟢 优秀
-**节省时间**: 98.1 秒
-**节省Token**: 47817 输入 + 12612 输出 = 60429 总计
-**节省成本**: $0.0290
-**效率提升**: 0.2x 倍
-**成本效益**: $0.000049/秒
+**Cache hit rate**: 100.0% 🟢 Excellent
+**Time saved**: 98.1 seconds
+**Tokens saved**: 47817 input + 12612 output = 60429 total
+**Cost saved**: $0.0290
+**Efficiency improvement**: 0.2x
+**Cost efficiency**: $0.000049/seconds
 
-## 调研数据概览
+## Research Data Overview
 
-根据Prompt模板数据整合规则，成功收集四类调研材料：
+According to the prompt template data integration rules, four categories of research materials were successfully collected:
 
-✅ **系统上下文调研报告**: 已生成
-✅ **领域模块调研报告**: 已生成
-✅ **工作流调研报告**: 已生成
-✅ **代码洞察数据**: 已生成
+✅ **System context research report**: Generated
+✅ **Domain module research report**: Generated
+✅ **Workflow research report**: Generated
+✅ **Code insight data**: Generated
 
-**调研完成度**: 4/4 (100.0%)
+**Research completion**: 4/4 (100.0%)
 
-## Memory存储概览
+## Memory Storage Overview
 
-**总存储大小**: 217372 bytes
-**存储作用域数量**: 4 个
+**Total storage size**: 217372 bytes
+**Number of storage scopes**: 4 scopes
 
-### 主要存储分布（前3位）
+### Main storage distribution (top 3)
 - **documentation**: 95615 bytes (44.0%)
 - **preprocess**: 80239 bytes (36.9%)
 - **studies_research**: 41482 bytes (19.1%)
 
-## 文档生成概览
+## Documentation Generation Overview
 
-**文档生成数量**: 7 个
-**文档类型**: 
- - 核心模块与组件调研报告_文档数据域
- - 核心模块与组件调研报告_用户交互域
- - 边界调用
- - 核心模块与组件调研报告_系统支撑域
- - 架构说明
- - 项目概述
- - 核心流程
+**Number of generated documents**: 7 documents
+**Document types**:
+ - Core Module and Component Research Report - Document Data Domain
+ - Core Module and Component Research Report - User Interaction Domain
+ - Boundary Calls
+ - Core Module and Component Research Report - System Support Domain
+ - Architecture Overview
+ - Project Overview
+ - Core Workflow
 
-## 总体评估
+## Overall Assessment
 
-**数据完整性**: 100.0% 🟢 完整
-**缓存效率**: 100.0% 🟢 高效
-**执行效率**: 589.59s 🔴 较慢
-**文档生成**: 已完成 🟢 成功
+**Data integrity**: 100.0% 🟢 Complete
+**Cache efficiency**: 100.0% 🟢 Efficient
+**Execution efficiency**: 589.59s 🔴 Slow
+**Documentation generation**: Completed 🟢 successful

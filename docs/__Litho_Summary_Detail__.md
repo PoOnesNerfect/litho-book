@@ -1,222 +1,222 @@
-# 项目分析总结报告（完整版）
+# Project Analysis Summary Report (Full Version)
 
-生成时间: 2025-10-04 09:16:59 UTC
+Generated at: 2025-10-04 09:16:59 UTC
 
-## 执行耗时统计
+## Execution Time Statistics
 
-- **总执行时间**: 589.59 秒
-- **预处理阶段**: 0.08 秒 (0.0%)
-- **研究阶段**: 68.03 秒 (11.5%)
-- **文档生成阶段**: 521.49 秒 (88.4%)
-- **输出阶段**: 0.00 秒 (0.0%)
-- **Summary生成时间**: 0.000 秒
+- **Total execution time**: 589.59 seconds
+- **Preprocessing phase**: 0.08 seconds (0.0%)
+- **Research phase**: 68.03 seconds (11.5%)
+- **Documentation generation phase**: 521.49 seconds (88.4%)
+- **Output phase**: 0.00 seconds (0.0%)
+- **Summary generation time**: 0.000 seconds
 
-## 缓存性能统计与节约效果
+## Cache Performance Statistics and Savings
 
-### 性能指标
-- **缓存命中率**: 100.0%
-- **总操作次数**: 17
-- **缓存命中**: 17 次
-- **缓存未命中**: 0 次
-- **缓存写入**: 1 次
+### Performance Metrics
+- **Cache hit rate**: 100.0%
+- **Total operations**: 17
+- **Cache hits**: 17
+- **Cache misses**: 0
+- **Cache writes**: 1
 
-### 节约效果
-- **节省推理时间**: 98.1 秒
-- **节省Token数量**: 47817 输入 + 12612 输出 = 60429 总计
-- **估算节省成本**: $0.0290
-- **效率提升比**: 0.2x（节省时间 / 实际执行时间）
+### Savings
+- **Reasoning time saved**: 98.1 seconds
+- **Tokens saved**: 47817 input + 12612 output = 60429 total
+- **Estimated cost saved**: $0.0290
+- **Efficiency improvement ratio**: 0.2x(time saved / actual execution time)
 
-## 核心调研数据汇总
+## Core Research Data Summary
 
-根据Prompt模板数据整合规则，以下为四类调研材料的完整内容：
+According to the prompt template data integration rules, the following is the complete content of the four research material categories:
 
-### 系统上下文调研报告
-提供项目的核心目标、用户角色和系统边界信息。
+### System context research report
+Provides the project core goals, user roles, and system boundary information.
 
 ```json
 {
-  "business_value": "通过将本地文档目录转化为结构化、可搜索、带AI辅助的Web界面，显著提升个人知识库的可访问性与使用效率，减少信息碎片化，支持高效的知识检索与内容创作，尤其适合技术文档管理、读书笔记整理和AI增强型学习场景。",
+  "business_value": "By converting local documentation directories into a structured, searchable, AI-assisted web interface, it significantly improves the accessibility and efficiency of personal knowledge bases, reduces information fragmentation, and supports efficient knowledge retrieval and content creation, especially for technical documentation management, reading-note organization, and AI-enhanced learning scenarios.",
   "confidence_score": 0.95,
   "external_systems": [
     {
-      "description": "提供AI聊天流式响应服务，用于处理用户在前端提出的文档相关问题",
+      "description": "Provides an AI chat streaming response service for handling document-related questions submitted by users in the frontend",
       "interaction_type": "HTTP/REST",
-      "name": "智谱AI (ZhipuAI) OpenAI兼容API"
+      "name": "GitHub Models (GitHubModels) OpenAI-compatible API"
     }
   ],
-  "project_description": "Litho Book 是一个命令行工具与 Web 服务一体化的本地文档浏览与AI助手系统，专为开发者和知识工作者设计，用于将本地 Markdown 文档目录转换为可搜索、可浏览的 Web 应用，并集成 AI 聊天功能以增强知识探索体验。",
+  "project_description": "Litho Book is a local document browsing and AI assistant system that combines a command-line tool with a web service. It is designed for developers and knowledge workers to convert local Markdown documentation directories into a searchable, browsable web application, with integrated AI chat capabilities to enhance knowledge exploration.",
   "project_name": "litho-book",
   "project_type": "FullStackApp",
   "system_boundary": {
     "excluded_components": [
-      "前端React/Vue界面",
-      "Markdown文件生成工具",
-      "文档版本控制（如Git）",
-      "用户认证与权限系统",
-      "云存储同步服务",
-      "AI模型训练或微调"
+      "Frontend React/Vue interface",
+      "Markdown file generation tools",
+      "Document version control (such as Git)",
+      "User authentication and authorization system",
+      "Cloud storage synchronization service",
+      "AI model training or fine-tuning"
     ],
     "included_components": [
-      "命令行参数解析 (cli.rs)",
-      "文件系统扫描与文档树构建 (filesystem.rs)",
-      "统一错误处理机制 (error.rs)",
-      "Axum HTTP 服务端 (server.rs)",
-      "主程序入口协调 (main.rs)"
+      "Command-line argument parsing (cli.rs)",
+      "Filesystem scanning and document tree construction (filesystem.rs)",
+      "Unified error handling mechanism (error.rs)",
+      "Axum HTTP server (server.rs)",
+      "Main program entry coordination (main.rs)"
     ],
-    "scope": "本地文档服务器与AI增强型知识探索系统，不包含前端UI开发、文档生成、文档同步或用户账户管理功能"
+    "scope": "Local documentation server and AI-enhanced knowledge exploration system; does not include frontend UI development, document generation, document synchronization, or user account management capabilities"
   },
   "target_users": [
     {
-      "description": "使用本地 Markdown 文件管理代码文档、API 注释、技术笔记的软件工程师",
-      "name": "开发者",
+      "description": "Software engineers who use local Markdown files to manage code documentation, API notes, and technical notes",
+      "name": "Developers",
       "needs": [
-        "快速浏览本地文档目录",
-        "全文搜索文档内容",
-        "在浏览器中获得结构化展示",
-        "通过AI助手提问文档相关内容"
+        "Quickly browse local documentation directories",
+        "Full-text search over document content",
+        "View structured content in a browser",
+        "Ask document-related questions through an AI assistant"
       ]
     },
     {
-      "description": "需要整理和检索大量个人笔记、读书摘要、研究资料的学者、研究员或内容创作者",
-      "name": "知识工作者",
+      "description": "Scholars, researchers, or content creators who need to organize and retrieve large numbers of personal notes, reading summaries, and research materials",
+      "name": "Knowledge workers",
       "needs": [
-        "统一管理分散的 Markdown 文件",
-        "基于关键词快速定位信息",
-        "获得上下文相关的AI问答支持",
-        "离线使用，无需云端上传"
+        "Centrally manage scattered Markdown files",
+        "Quickly locate information by keyword",
+        "Receive context-aware AI Q&A support",
+        "Use offline without cloud uploads"
       ]
     }
   ]
 }
 ```
 
-### 领域模块调研报告
-提供高层次的领域划分、模块关系和核心业务流程信息。
+### Domain module research report
+Provides high-level domain partitioning, module relationships, and core business process information.
 
 ```json
 {
-  "architecture_summary": "Litho Book 是一个面向本地知识管理的全栈应用，采用命令行启动 + Web 服务架构，核心设计遵循职责分离原则。系统以 Rust 编写，基于 Axum 构建高性能 HTTP 服务，通过 CLI 解析用户输入，由主程序协调文件系统扫描、错误处理与服务启动。整体架构清晰，模块间依赖明确，强调低耦合与高内聚，特别针对 Markdown 文档的结构化浏览与 AI 增强搜索进行了深度优化，具备良好的可维护性与扩展性。",
+  "architecture_summary": "Litho Book is a full-stack application for local knowledge management. It uses a command-line startup plus web-service architecture, and its core design follows separation of concerns. The system is written in Rust and uses Axum to build a high-performance HTTP service. User input is parsed through the CLI, while the main program coordinates filesystem scanning, error handling, and service startup. The overall architecture is clear, module dependencies are explicit, and the design emphasizes low coupling and high cohesion. It is deeply optimized for structured Markdown document browsing and AI-enhanced search, with good maintainability and extensibility.",
   "business_flows": [
     {
-      "description": "用户通过命令行启动应用后，系统从参数解析开始，完成日志初始化、文档树构建、HTTP 服务绑定与自动浏览器打开的完整生命周期，是用户首次使用系统的必经路径。",
-      "entry_point": "命令行执行 `litho-book --path ./docs --port 3000`",
+      "description": "After the user starts the application from the command line, the system begins with argument parsing and completes the full lifecycle of log initialization, document tree construction, HTTP service binding, and automatic browser opening. This is the required first-use path for users.",
+      "entry_point": "Run from the command line `litho-book --path ./docs --port 3000`",
       "importance": 10.0,
       "involved_domains_count": 3,
-      "name": "项目启动与服务初始化流程",
+      "name": "Project Startup and Service Initialization Flow",
       "steps": [
         {
           "code_entry_point": null,
-          "domain_module": "用户交互域",
-          "operation": "通过 cli.rs 解析命令行参数，验证文档目录与端口合法性",
+          "domain_module": "User Interaction Domain",
+          "operation": "Parse command-line arguments through cli.rs and validate the documentation directory and port",
           "step": 1,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "系统支撑域",
-          "operation": "初始化日志系统，打印启动横幅",
+          "domain_module": "System Support Domain",
+          "operation": "Initialize logging system，Print startup banner",
           "step": 2,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "文档数据域",
-          "operation": "调用 filesystem.rs 递归扫描文档目录，构建 DocumentTree 内存结构",
+          "domain_module": "Document Data Domain",
+          "operation": "Call filesystem.rs to recursively scan the documentation directory and build the in-memory DocumentTree structure",
           "step": 3,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "系统支撑域",
-          "operation": "创建 Axum 应用状态（AppState），绑定文档树与路由处理器",
+          "domain_module": "System Support Domain",
+          "operation": "Create Axum application state (AppState) and bind the document tree and route handlers",
           "step": 4,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "用户交互域",
-          "operation": "启动 Axum HTTP 服务器，绑定 TCP 端口",
+          "domain_module": "User Interaction Domain",
+          "operation": "Start the Axum HTTP server and bind the TCP port",
           "step": 5,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "系统支撑域",
-          "operation": "根据配置决定是否自动打开浏览器访问服务地址",
+          "domain_module": "System Support Domain",
+          "operation": "Decide based on configuration whether to automatically open the browser to the service address",
           "step": 6,
           "sub_module": null
         }
       ]
     },
     {
-      "description": "用户在 Web 界面输入关键词进行搜索，系统在文档树中执行高效全文检索，返回带高亮与相关性评分的结果，是知识工作者最核心的使用场景。",
-      "entry_point": "前端发起 GET /search?q=关键词 请求",
+      "description": "The user enters keywords in the web interface to search. The system performs efficient full-text search in the document tree and returns results with highlighting and relevance scores. This is the core usage scenario for knowledge workers.",
+      "entry_point": "The frontend sends a GET /search?q=keyword request",
       "importance": 10.0,
       "involved_domains_count": 2,
-      "name": "文档全文搜索流程",
+      "name": "Document Full-Text Search Flow",
       "steps": [
         {
           "code_entry_point": null,
-          "domain_module": "用户交互域",
-          "operation": "Web 服务接收 /search 请求，提取查询关键词",
+          "domain_module": "User Interaction Domain",
+          "operation": "The web service receives the /search request and extracts the query keyword",
           "step": 1,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "文档数据域",
-          "operation": "在 DocumentTree 中执行关键词匹配，结合标题权重、词频与上下文进行相关性评分",
+          "domain_module": "Document Data Domain",
+          "operation": "Execute keyword matching in DocumentTree and calculate relevance scores using title weights, term frequency, and context",
           "step": 2,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "文档数据域",
-          "operation": "对匹配结果进行排序，提取上下文片段并添加 HTML 高亮标签",
+          "domain_module": "Document Data Domain",
+          "operation": "Sort matching results, extract context snippets, and add HTML highlight tags",
           "step": 3,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "用户交互域",
-          "operation": "将搜索结果序列化为 JSON 并返回前端",
+          "domain_module": "User Interaction Domain",
+          "operation": "Serialize search results as JSON and return them to the frontend",
           "step": 4,
           "sub_module": null
         }
       ]
     },
     {
-      "description": "用户向 AI 助手提问与文档相关的问题，系统将上下文与历史对话打包，调用外部 AI API 获取流式响应，并以 SSE 格式逐段返回，实现自然语言交互体验。",
-      "entry_point": "前端发起 POST /chat 请求，携带历史会话与问题",
+      "description": "The user asks the AI assistant document-related questions. The system packages context and conversation history, calls an external AI API to obtain a streaming response, and returns it incrementally in SSE format to provide a natural-language interaction experience.",
+      "entry_point": "The frontend sends a POST /chat request containing conversation history and the question",
       "importance": 9.0,
       "involved_domains_count": 3,
-      "name": "AI助手流式对话流程",
+      "name": "AI Assistant Streaming Conversation Flow",
       "steps": [
         {
           "code_entry_point": null,
-          "domain_module": "用户交互域",
-          "operation": "Web 服务接收 /chat 请求，提取用户问题与对话历史",
+          "domain_module": "User Interaction Domain",
+          "operation": "The web service receives the /chat request and extracts the user question and conversation history",
           "step": 1,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "文档数据域",
-          "operation": "根据上下文检索相关文档片段，构建包含系统提示词与上下文的 AI 请求内容",
+          "domain_module": "Document Data Domain",
+          "operation": "Retrieve relevant document snippets from context and build AI request content containing the system prompt and context",
           "step": 2,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "用户交互域",
-          "operation": "通过 reqwest 向智谱AI OpenAI API 发起流式 HTTP 请求",
+          "domain_module": "User Interaction Domain",
+          "operation": "Use reqwest to send a streaming HTTP request to the GitHub Models OpenAI API",
           "step": 3,
           "sub_module": null
         },
         {
           "code_entry_point": null,
-          "domain_module": "用户交互域",
-          "operation": "将 AI 的流式响应转换为 Server-Sent Events (SSE) 格式，逐块返回前端",
+          "domain_module": "User Interaction Domain",
+          "operation": "Convert the AI streaming response into Server-Sent Events (SSE) format and return it to the frontend chunk by chunk",
           "step": 4,
           "sub_module": null
         }
@@ -231,40 +231,40 @@
         "src/server.rs"
       ],
       "complexity": 8.0,
-      "description": "负责处理用户与系统的直接交互，包括命令行参数解析和 Web 界面的后端服务支持。该领域是用户进入系统的唯一入口，承担配置接收、参数校验与前端请求响应的核心职责，是连接用户意图与系统能力的桥梁。",
-      "domain_type": "核心业务域",
+      "description": "Handles direct interaction between users and the system, including command-line argument parsing and backend service support for the web interface. This domain is the sole entry point into the system, responsible for receiving configuration, validating parameters, and responding to frontend requests; it bridges user intent and system capabilities.",
+      "domain_type": "Core Business Domain",
       "importance": 10.0,
-      "name": "用户交互域",
+      "name": "User Interaction Domain",
       "sub_modules": [
         {
           "code_paths": [
             "src/cli.rs"
           ],
-          "description": "解析用户通过命令行输入的文档路径、端口、主机地址等配置参数，并进行合法性校验（如目录存在性、端口权限），支持跨平台权限检测。",
+          "description": "Parses configuration parameters entered by users through the command line, such as document path, port, and host address, and validates them (for example, directory existence and port permissions), with cross-platform permission checks.",
           "importance": 9.0,
           "key_functions": [
-            "解析 --path、--port、--host、--open、--verbose 参数",
-            "验证文档目录是否存在且为目录",
-            "检测低权限端口（<1024）的管理员权限",
-            "生成服务地址字符串"
+            "Parse the --path, --port, --host, --open, and --verbose arguments",
+            "Verify that the documentation directory exists and is a directory",
+            "Check administrator privileges for privileged ports (<1024)",
+            "Generate service address strings"
           ],
-          "name": "命令行接口"
+          "name": "Command-Line Interface"
         },
         {
           "code_paths": [
             "src/server.rs"
           ],
-          "description": "基于 Axum 提供 RESTful API，响应前端请求，包括文档浏览、全文搜索、系统统计与 AI 聊天流式响应。是用户通过浏览器与系统交互的核心通道。",
+          "description": "Provides RESTful APIs based on Axum to respond to frontend requests, including document browsing, full-text search, system statistics, and AI chat streaming responses. It is the core channel for users to interact with the system through a browser.",
           "importance": 10.0,
           "key_functions": [
-            "渲染 Markdown 文件为 HTML",
-            "返回文档树结构",
-            "执行关键词全文搜索（含加权排序）",
-            "返回系统统计信息（文件数、大小等）",
-            "流式响应 AI 对话（SSE）",
-            "生成首页 HTML 模板"
+            "Render Markdown files as HTML",
+            "Return the document tree structure",
+            "Execute keyword full-text search (with weighted ranking)",
+            "Return system statistics (file count, size, etc.)",
+            "Stream AI conversation responses (SSE)",
+            "Generate the homepage HTML template"
           ],
-          "name": "Web 服务接口"
+          "name": "Web Service Interface"
         }
       ]
     },
@@ -273,52 +273,52 @@
         "src/filesystem.rs"
       ],
       "complexity": 9.0,
-      "description": "负责本地文档目录的结构化建模与内容管理，将文件系统中的 Markdown 文件转换为可搜索、可导航的内存树形结构（DocumentTree），并提供全文检索与渲染能力。是系统知识内容的核心载体与处理引擎。",
-      "domain_type": "核心业务域",
+      "description": "Responsible for structured modeling and content management of local documentation directories. It converts Markdown files in the filesystem into a searchable, navigable in-memory tree structure (DocumentTree), and provides full-text search and rendering capabilities. It is the core carrier and processing engine for the system knowledge content.",
+      "domain_type": "Core Business Domain",
       "importance": 10.0,
-      "name": "文档数据域",
+      "name": "Document Data Domain",
       "sub_modules": [
         {
           "code_paths": [
             "src/filesystem.rs"
           ],
-          "description": "递归扫描指定目录，构建包含文件路径、元数据与内容的树形结构，仅索引 .md 文件，忽略隐藏文件，支持文件类型识别与路径映射。",
+          "description": "Recursively scans the specified directory and builds a tree structure containing file paths, metadata, and content. It indexes only .md files, ignores hidden files, and supports file type identification and path mapping.",
           "importance": 9.0,
           "key_functions": [
-            "递归遍历目录",
-            "构建 FileNode 节点与 DocumentTree 结构",
-            "过滤非 Markdown 文件与隐藏文件",
-            "建立文件路径到内容的索引"
+            "Recursively traverse directories",
+            "Build FileNode nodes and the DocumentTree structure",
+            "Filter non-Markdown files and hidden files",
+            "Build an index from file paths to content"
           ],
-          "name": "文档树构建"
+          "name": "Document Tree Construction"
         },
         {
           "code_paths": [
             "src/filesystem.rs"
           ],
-          "description": "实现基于关键词的智能搜索，结合标题权重、词频分析、上下文提取与相关性排序，返回带高亮的搜索结果，支持快速定位文档内容。",
+          "description": "Implements keyword-based intelligent search that combines title weighting, term-frequency analysis, context extraction, and relevance ranking, returning highlighted search results for quick document content location.",
           "importance": 10.0,
           "key_functions": [
-            "关键词匹配与高亮",
-            "标题加权（H1/H2 优先）",
-            "词频统计与相关性评分",
-            "上下文片段提取",
-            "搜索结果排序"
+            "Keyword matching and highlighting",
+            "Title weighting (H1/H2 first)",
+            "Term-frequency statistics and relevance scoring",
+            "Context snippet extraction",
+            "Search result sorting"
           ],
-          "name": "全文搜索引擎"
+          "name": "Full-Text Search Engine"
         },
         {
           "code_paths": [
             "src/filesystem.rs"
           ],
-          "description": "将 Markdown 源文件转换为 HTML 格式，用于前端展示，确保内容在浏览器中正确呈现。",
+          "description": "Converts Markdown source files to HTML for frontend display, ensuring content renders correctly in the browser.",
           "importance": 7.0,
           "key_functions": [
-            "Markdown 到 HTML 的语法转换",
-            "代码块高亮支持",
-            "内联样式与结构保留"
+            "Syntax conversion from Markdown to HTML",
+            "Code block highlighting support",
+            "Inline style and structure preservation"
           ],
-          "name": "Markdown 渲染器"
+          "name": "Markdown Renderer"
         }
       ]
     },
@@ -328,112 +328,112 @@
         "src/error.rs"
       ],
       "complexity": 6.0,
-      "description": "提供系统级通用能力，包括统一错误处理、日志初始化、程序启动协调与外部服务调用。该领域不包含业务逻辑，但保障系统稳定运行与模块间通信的可靠性。",
-      "domain_type": "基础设施域",
+      "description": "Provides system-level common capabilities, including unified error handling, log initialization, program startup coordination, and external service calls. This domain contains no business logic, but ensures stable system operation and reliable inter-module communication.",
+      "domain_type": "Infrastructure Domain",
       "importance": 8.0,
-      "name": "系统支撑域",
+      "name": "System Support Domain",
       "sub_modules": [
         {
           "code_paths": [
             "src/error.rs"
           ],
-          "description": "定义统一的 LithoBookError 枚举类型，封装 IO、序列化、路径无效等错误，并通过实现 From<LithoBookError> for axum::http::StatusCode，将应用错误自动映射为标准 HTTP 状态码，实现前后端错误一致性。",
+          "description": "Defines a unified LithoBookError enum that wraps errors such as IO, serialization, and invalid paths. By implementing From<LithoBookError> for axum::http::StatusCode, it automatically maps application errors to standard HTTP status codes, ensuring consistent frontend/backend error handling.",
           "importance": 9.0,
           "key_functions": [
-            "定义 LithoBookError 枚举",
-            "封装 std::io::Error、serde_json::Error",
-            "映射为 axum::http::StatusCode",
-            "提供错误转换与日志记录"
+            "Define the LithoBookError enum",
+            "Wrap std::io::Error and serde_json::Error",
+            "Map to axum::http::StatusCode",
+            "Provide error conversion and logging"
           ],
-          "name": "错误处理中枢"
+          "name": "Error Handling Hub"
         },
         {
           "code_paths": [
             "src/main.rs"
           ],
-          "description": "作为应用主入口，负责初始化日志、加载配置、构建文档树、创建服务器并启动服务，是整个系统生命周期的调度中心。",
+          "description": "As the application main entry point, it initializes logging, loads configuration, builds the document tree, creates the server, and starts the service; it is the orchestration center for the entire system lifecycle.",
           "importance": 8.0,
           "key_functions": [
-            "解析命令行参数",
-            "初始化日志系统",
-            "打印启动横幅",
-            "调用 filesystem 构建文档树",
-            "创建 Axum 路由器与 AppState",
-            "绑定 TCP 端口并启动 HTTP 服务",
-            "自动打开浏览器"
+            "Parse command-line arguments",
+            "Initialize logging system",
+            "Print startup banner",
+            "Call filesystem to build the document tree",
+            "Create the Axum router and AppState",
+            "Bind the TCP port and start the HTTP service",
+            "Automatically open browser"
           ],
-          "name": "程序启动协调"
+          "name": "Program Startup Coordination"
         }
       ]
     }
   ],
   "domain_relations": [
     {
-      "description": "命令行接口与 Web 服务接口均依赖文档数据域提供的 DocumentTree 结构，用于响应用户请求。CLI 在启动时调用文件系统模块构建树，Web 服务在每次搜索或浏览时访问该结构，是系统最核心的数据流依赖。",
-      "from_domain": "用户交互域",
-      "relation_type": "数据依赖",
+      "description": "Both the command-line interface and web service interface depend on the DocumentTree structure provided by the Document Data Domain to respond to user requests. The CLI calls the filesystem module at startup to build the tree, and the web service accesses this structure for each search or browsing request; this is the system core data-flow dependency.",
+      "from_domain": "User Interaction Domain",
+      "relation_type": "Data dependency",
       "strength": 9.0,
-      "to_domain": "文档数据域"
+      "to_domain": "Document Data Domain"
     },
     {
-      "description": "CLI 与 Web 服务在执行过程中均依赖系统支撑域的错误处理机制，将业务错误统一转换为标准 HTTP 响应码，确保用户获得一致的错误反馈。",
-      "from_domain": "用户交互域",
-      "relation_type": "服务调用",
+      "description": "During execution, both CLI and web service depend on the error handling mechanism in the System Support Domain to uniformly convert business errors into standard HTTP response codes, ensuring consistent user-facing error feedback.",
+      "from_domain": "User Interaction Domain",
+      "relation_type": "Service call",
       "strength": 8.0,
-      "to_domain": "系统支撑域"
+      "to_domain": "System Support Domain"
     },
     {
-      "description": "主程序入口（main.rs）作为启动协调者，主动调用 CLI 模块解析参数、调用 filesystem 构建文档树、调用 server 启动 HTTP 服务，是整个系统流程的发起者与调度者。",
-      "from_domain": "系统支撑域",
-      "relation_type": "服务调用",
+      "description": "The main program entry point (main.rs), as the startup coordinator, actively calls the CLI module to parse arguments, calls filesystem to build the document tree, and calls server to start the HTTP service. It initiates and orchestrates the entire system flow.",
+      "from_domain": "System Support Domain",
+      "relation_type": "Service call",
       "strength": 9.0,
-      "to_domain": "用户交互域"
+      "to_domain": "User Interaction Domain"
     },
     {
-      "description": "文档数据域在扫描文件或渲染 Markdown 时可能触发 IO 错误，需通过 error.rs 统一转换为 LithoBookError，实现错误的标准化传递。",
-      "from_domain": "文档数据域",
-      "relation_type": "数据依赖",
+      "description": "The Document Data Domain may trigger IO errors when scanning files or rendering Markdown; these must be uniformly converted to LithoBookError through error.rs to standardize error propagation.",
+      "from_domain": "Document Data Domain",
+      "relation_type": "Data dependency",
       "strength": 7.0,
-      "to_domain": "系统支撑域"
+      "to_domain": "System Support Domain"
     },
     {
-      "description": "Web 服务接口在处理 AI 聊天请求时，通过 reqwest 向智谱AI的 OpenAI 兼容 API 发起 HTTP 请求，获取流式响应并转换为 SSE 流返回前端，是系统增强功能的关键外部依赖。",
-      "from_domain": "用户交互域",
-      "relation_type": "服务调用",
+      "description": "When handling AI chat requests, the Web Service Interface uses reqwest to send HTTP requests to the GitHub Models OpenAI-compatible API, obtains streaming responses, and converts them into SSE streams for the frontend. This is the key external dependency for the system enhanced functionality.",
+      "from_domain": "User Interaction Domain",
+      "relation_type": "Service call",
       "strength": 8.0,
-      "to_domain": "外部系统"
+      "to_domain": "External System"
     }
   ]
 }
 ```
 
-### 工作流调研报告
-包含对代码库的静态分析结果和业务流程分析。
+### Workflow research report
+Contains static codebase analysis results and business process analysis.
 
 ```json
 {
   "main_workflow": {
-    "description": "用户通过命令行启动应用后，系统从参数解析开始，完成日志初始化、文档树构建、HTTP 服务绑定与自动浏览器打开的完整生命周期，是用户首次使用系统的必经路径。",
-    "flowchart_mermaid": "graph TD\n    A[用户执行命令行启动] --> B[解析命令行参数]\n    B --> C[初始化日志系统]\n    C --> D[构建文档树]\n    D --> E[创建 HTTP 服务器]\n    E --> F[启动 HTTP 服务]\n    F --> G[自动打开浏览器]",
-    "name": "项目启动与服务初始化流程"
+    "description": "After the user starts the application from the command line, the system begins with argument parsing and completes the full lifecycle of log initialization, document tree construction, HTTP service binding, and automatic browser opening. This is the required first-use path for users.",
+    "flowchart_mermaid": "graph TD\n    A[User runs command-line startup] --> B[Parse command-line arguments]\n    B --> C[Initialize logging system]\n    C --> D[Build document tree]\n    D --> E[Create HTTP server]\n    E --> F[Start HTTP service]\n    F --> G[Automatically open browser]",
+    "name": "Project Startup and Service Initialization Flow"
   },
   "other_important_workflows": [
     {
-      "description": "用户在 Web 界面输入关键词进行搜索，系统在文档树中执行高效全文检索，返回带高亮与相关性评分的结果，是知识工作者最核心的使用场景。",
-      "flowchart_mermaid": "graph TD\n    A[用户输入搜索关键词] --> B[接收搜索请求]\n    B --> C[执行全文检索]\n    C --> D[排序并高亮结果]\n    D --> E[返回搜索结果]",
-      "name": "文档全文搜索流程"
+      "description": "The user enters keywords in the web interface to search. The system performs efficient full-text search in the document tree and returns results with highlighting and relevance scores. This is the core usage scenario for knowledge workers.",
+      "flowchart_mermaid": "graph TD\n    A[User enters search keyword] --> B[Receive search request]\n    B --> C[Execute full-text search]\n    C --> D[Sort and highlight results]\n    D --> E[Return search results]",
+      "name": "Document Full-Text Search Flow"
     },
     {
-      "description": "用户向 AI 助手提问与文档相关的问题，系统将上下文与历史对话打包，调用外部 AI API 获取流式响应，并以 SSE 格式逐段返回，实现自然语言交互体验。",
-      "flowchart_mermaid": "graph TD\n    A[用户提交问题] --> B[接收聊天请求]\n    B --> C[构建 AI 请求内容]\n    C --> D[调用 AI API]\n    D --> E[流式返回响应]",
-      "name": "AI助手流式对话流程"
+      "description": "The user asks the AI assistant document-related questions. The system packages context and conversation history, calls an external AI API to obtain a streaming response, and returns it incrementally in SSE format to provide a natural-language interaction experience.",
+      "flowchart_mermaid": "graph TD\n    A[User submits question] --> B[Receive chat request]\n    B --> C[Build AI request content]\n    C --> D[Call AI API]\n    D --> E[Return response as a stream]",
+      "name": "AI Assistant Streaming Conversation Flow"
     }
   ]
 }
 ```
 
-### 代码洞察数据
-来自预处理阶段的代码分析结果，包含函数、类和模块的定义。
+### Code insight data
+Code analysis results from preprocessing, including function, class, and module definitions.
 
 ```json
 [
@@ -452,7 +452,7 @@
       "importance_score": 1.0,
       "interfaces": [],
       "name": "main.rs",
-      "source_summary": "mod cli;\nmod error;\nmod filesystem;\nmod server;\n\nuse clap::Parser;\nuse tracing::{error, info, warn};\nuse tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};\n\n#[tokio::main]\nasync fn main() -> anyhow::Result<()> {\n    // Parse command line arguments\n    let args = cli::Args::parse();\n    \n    // Initialize logging\n    init_logging(args.verbose);\n    \n    // Print banner\n    print_banner();\n    \n    // Validate arguments\n    if let Err(e) = args.validate() {\n        error!(\"参数验证失败: {}\", e);\n        std::process::exit(1);\n    }\n    \n    info!(\"正在扫描文档目录: {}\", args.docs_dir.display());\n    \n    // Build document tree\n    let doc_tree = match filesystem::DocumentTree::new(&args.docs_dir) {\n        Ok(tree) => {\n            let stats = tree.get_stats();\n            info!(\n                \"成功扫描文档目录: {} 个文件, {} 个目录, 总大小: {}\",\n                stats.total_files,\n                stats.total_dirs,\n                format_bytes(stats.total_size)\n            );\n            \n            if stats.total_files == 0 {\n                warn!(\"未找到任何 Markdown 文件，请检查目录是否包含 .md 文件\");\n            }\n            \n            tree\n        }\n        Err(e) => {\n            error!(\"扫描文档目录失败: {}\", e);\n            std::process::exit(1);\n        }\n    };\n    \n    // Create router\n    let docs_path = args.docs_dir.display().to_string().replace('\\\\', \"/\");\n    let app = server::create_router(doc_tree, docs_path);\n    \n    // Start server\n    let bind_address = args.bind_address();\n    let listener = match tokio::net::TcpListener::bind(&bind_address).await {\n        Ok(listener) => {\n            info!(\"服务器绑定成功: {}\", bind_address);\n            listener\n        }\n        Err(e) => {\n            error!(\"无法绑定到地址 {}: {}\", bind_address, e);\n            std::process::exit(1);\n        }\n    };\n    \n    let server_url = args.server_url();\n    \n    info!(\"🚀 Litho Book 服务器启动成功!\");\n    info!(\"📖 访问地址: {}\", server_url);\n    info!(\"📁 文档目录: {}\", args.docs_dir.display());\n    info!(\"⏹️  按 Ctrl+C 停止服务器\");\n    \n    // Auto-open browser\n    if args.open {\n        info!(\"正在打开浏览器...\");\n        if let Err(e) = open_browser(&server_url) {\n            warn!(\"无法自动打开浏览器: {}\", e);\n            info!(\"请手动访问: {}\", server_url);\n        }\n    }\n    \n    // Start server\n    if let Err(e) = axum::serve(listener, app).await {\n        error!(\"服务器运行错误: {}\", e);\n        std::process::exit(1);\n    }\n    \n    Ok(())\n}\n\n/// Initialize logging based on verbosity level\nfn init_logging(verbose: bool) {\n    let filter = if verbose {\n        tracing_subscriber::filter::LevelFilter::DEBUG\n    } else {\n        tracing_subscriber::filter::LevelFilter::INFO\n    };\n    \n    tracing_subscriber::registry()\n        .with(\n            tracing_subscriber::fmt::layer()\n                .with_target(false)\n                .with_thread_ids(false)\n                .with_thread_names(false)\n                .with_file(false)\n                .with_line_number(false)\n        )\n        .with(filter)\n        .init();\n}\n\n/// Print application banner\nfn print_banner() {\n    println!();\n    println!(\"📚 Litho Book - Documentation Reader\");\n    println!(\"   Version: {}\", env!(\"CARGO_PKG_VERSION\"));\n    println!(\"   A web-based reader for litho-generated documentation\");\n    println!();\n}\n\n/// Open browser automatically\nfn open_browser(url: &str) -> anyhow::Result<()> {\n    #[cfg(target_os = \"windows\")]\n    {\n        std::process::Command::new(\"cmd\")\n            .args([\"/c\", \"start\", \"\", url])\n            .spawn()?;\n    }\n    \n    #[cfg(target_os = \"macos\")]\n    {\n        std::process::Command::new(\"open\")\n            .arg(url)\n            .spawn()?;\n    }\n    \n    #[cfg(target_os = \"linux\")]\n    {\n        // Try different browsers in order of preference\n        let browsers = [\"xdg-open\", \"firefox\", \"chromium\", \"google-chrome\"];\n        \n        for browser in &browsers {\n            if std::process::Command::new(browser)\n                .arg(url)\n                .spawn()\n                .is_ok()\n            {\n                return Ok(());\n            }\n        }\n        \n        anyhow::bail!(\"No suitable browser found\");\n    }\n    \n    #[cfg(not(any(target_os = \"windows\", target_os = \"macos\", target_os = \"linux\")))]\n    {\n        anyhow::bail!(\"Automatic browser opening not supported on this platform\");\n    }\n    \n    Ok(())\n}\n\n/// Format bytes into human-readable format\nfn format_bytes(bytes: u64) -> String {\n    const UNITS: &[&str] = &[\"B\", \"KB\", \"MB\", \"GB\", \"TB\"];\n    \n    if bytes == 0 {\n        return \"0 B\".to_string();\n    }\n    \n    let mut size = bytes as f64;\n    let mut unit_index = 0;\n    \n    while size >= 1024.0 && unit_index < UNITS.len() - 1 {\n        size /= 1024.0;\n        unit_index += 1;\n    }\n    \n    if unit_index == 0 {\n        format!(\"{} {}\", bytes, UNITS[unit_index])\n    } else {\n        format!(\"{:.1} {}\", size, UNITS[unit_index])\n    }\n}"
+      "source_summary": "mod cli;\nmod error;\nmod filesystem;\nmod server;\n\nuse clap::Parser;\nuse tracing::{error, info, warn};\nuse tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};\n\n#[tokio::main]\nasync fn main() -> anyhow::Result<()> {\n    // Parse command line arguments\n    let args = cli::Args::parse();\n    \n    // Initialize logging\n    init_logging(args.verbose);\n    \n    // Print banner\n    print_banner();\n    \n    // Validate arguments\n    if let Err(e) = args.validate() {\n        error!(\"Argument validation failed: {}\", e);\n        std::process::exit(1);\n    }\n    \n    info!(\"Scanning documentation directory: {}\", args.docs_dir.display());\n    \n    // Build document tree\n    let doc_tree = match filesystem::DocumentTree::new(&args.docs_dir) {\n        Ok(tree) => {\n            let stats = tree.get_stats();\n            info!(\n                \"successfully scanned documentation directory: {} files, {} directories, total size: {}\",\n                stats.total_files,\n                stats.total_dirs,\n                format_bytes(stats.total_size)\n            );\n            \n            if stats.total_files == 0 {\n                warn!(\"No Markdown files found; please check whether the directory contains .md files\");\n            }\n            \n            tree\n        }\n        Err(e) => {\n            error!(\"Failed to scan documentation directory: {}\", e);\n            std::process::exit(1);\n        }\n    };\n    \n    // Create router\n    let docs_path = args.docs_dir.display().to_string().replace('\\\\', \"/\");\n    let app = server::create_router(doc_tree, docs_path);\n    \n    // Start server\n    let bind_address = args.bind_address();\n    let listener = match tokio::net::TcpListener::bind(&bind_address).await {\n        Ok(listener) => {\n            info!(\"Server bound successfully: {}\", bind_address);\n            listener\n        }\n        Err(e) => {\n            error!(\"Unable to bind to address {}: {}\", bind_address, e);\n            std::process::exit(1);\n        }\n    };\n    \n    let server_url = args.server_url();\n    \n    info!(\"🚀 Litho Book server started successfully!\");\n    info!(\"📖 Access URL: {}\", server_url);\n    info!(\"📁 Documentation directory: {}\", args.docs_dir.display());\n    info!(\"⏹️  Press Ctrl+C to stop the server\");\n    \n    // Auto-open browser\n    if args.open {\n        info!(\"Opening browser...\");\n        if let Err(e) = open_browser(&server_url) {\n            warn!(\"unable to automatically open browser: {}\", e);\n            info!(\"Please visit manually: {}\", server_url);\n        }\n    }\n    \n    // Start server\n    if let Err(e) = axum::serve(listener, app).await {\n        error!(\"Server runtime error: {}\", e);\n        std::process::exit(1);\n    }\n    \n    Ok(())\n}\n\n/// Initialize logging based on verbosity level\nfn init_logging(verbose: bool) {\n    let filter = if verbose {\n        tracing_subscriber::filter::LevelFilter::DEBUG\n    } else {\n        tracing_subscriber::filter::LevelFilter::INFO\n    };\n    \n    tracing_subscriber::registry()\n        .with(\n            tracing_subscriber::fmt::layer()\n                .with_target(false)\n                .with_thread_ids(false)\n                .with_thread_names(false)\n                .with_file(false)\n                .with_line_number(false)\n        )\n        .with(filter)\n        .init();\n}\n\n/// Print application banner\nfn print_banner() {\n    println!();\n    println!(\"📚 Litho Book - Documentation Reader\");\n    println!(\"   Version: {}\", env!(\"CARGO_PKG_VERSION\"));\n    println!(\"   A web-based reader for litho-generated documentation\");\n    println!();\n}\n\n/// Open browser automatically\nfn open_browser(url: &str) -> anyhow::Result<()> {\n    #[cfg(target_os = \"windows\")]\n    {\n        std::process::Command::new(\"cmd\")\n            .args([\"/c\", \"start\", \"\", url])\n            .spawn()?;\n    }\n    \n    #[cfg(target_os = \"macos\")]\n    {\n        std::process::Command::new(\"open\")\n            .arg(url)\n            .spawn()?;\n    }\n    \n    #[cfg(target_os = \"linux\")]\n    {\n        // Try different browsers in order of preference\n        let browsers = [\"xdg-open\", \"firefox\", \"chromium\", \"google-chrome\"];\n        \n        for browser in &browsers {\n            if std::process::Command::new(browser)\n                .arg(url)\n                .spawn()\n                .is_ok()\n            {\n                return Ok(());\n            }\n        }\n        \n        anyhow::bail!(\"No suitable browser found\");\n    }\n    \n    #[cfg(not(any(target_os = \"windows\", target_os = \"macos\", target_os = \"linux\")))]\n    {\n        anyhow::bail!(\"Automatic browser opening not supported on this platform\");\n    }\n    \n    Ok(())\n}\n\n/// Format bytes into human-readable format\nfn format_bytes(bytes: u64) -> String {\n    const UNITS: &[&str] = &[\"B\", \"KB\", \"MB\", \"GB\", \"TB\"];\n    \n    if bytes == 0 {\n        return \"0 B\".to_string();\n    }\n    \n    let mut size = bytes as f64;\n    let mut unit_index = 0;\n    \n    while size >= 1024.0 && unit_index < UNITS.len() - 1 {\n        size /= 1024.0;\n        unit_index += 1;\n    }\n    \n    if unit_index == 0 {\n        format!(\"{} {}\", bytes, UNITS[unit_index])\n    } else {\n        format!(\"{:.1} {}\", size, UNITS[unit_index])\n    }\n}"
     },
     "complexity_metrics": {
       "cohesion_score": 0.9,
@@ -569,14 +569,14 @@
         "version": null
       }
     ],
-    "detailed_description": "main.rs 是 Litho Book 项目的执行入口，负责初始化应用环境、解析命令行参数、构建文档树、启动 Web 服务器并处理系统级操作。它协调多个模块（cli、error、filesystem、server）的工作流程，完成从用户输入到服务启动的完整生命周期。核心流程包括：解析命令行参数、初始化日志系统、打印启动横幅、验证参数合法性、扫描文档目录构建文件树、创建 Axum 路由器、绑定 TCP 监听端口、启动 HTTP 服务，并在必要时自动打开浏览器。该组件是整个应用的启动中枢，不包含业务逻辑实现，而是作为协调者将任务委托给其他模块。",
+    "detailed_description": "main.rs is the execution entry point for the Litho Book project. It initializes the application environment, parses command-line arguments, builds the document tree, starts the web server, and handles system-level operations. It coordinates the workflows of multiple modules (cli, error, filesystem, server), completing the full lifecycle from user input to service startup. The core workflow includes parsing command-line arguments, initializing logging, printing the startup banner, validating arguments, scanning the documentation directory to build the file tree, creating the Axum router, binding the TCP listener port, starting the HTTP service, and automatically opening the browser when needed. This component is the startup hub for the whole application; it does not implement business logic, but delegates tasks to other modules as a coordinator.",
     "interfaces": [],
     "responsibilities": [
-      "解析和验证命令行参数",
-      "初始化日志系统与环境配置",
-      "构建文档目录树并处理文件扫描",
-      "创建并启动 Axum HTTP 服务器",
-      "处理平台相关的浏览器自动打开逻辑"
+      "Parse and validate command-line arguments",
+      "Initialize the logging system and environment configuration",
+      "Build the documentation directory tree and handle file scanning",
+      "Create and start the Axum HTTP server",
+      "Handle platform-specific browser auto-open logic"
     ]
   },
   {
@@ -654,10 +654,10 @@
         "version": null
       }
     ],
-    "detailed_description": "filesystem.rs 是一个用于构建和管理文档目录树的模型组件，核心功能是递归扫描指定目录，将文件系统结构转换为内存中的树形数据结构（DocumentTree），并支持全文搜索、Markdown 渲染和文件内容读取。它将文件系统中的文件和目录抽象为 FileNode 节点，并通过 DocumentTree 统一管理文件路径映射、搜索索引和统计信息。该组件特别针对 Markdown 文件进行优化，仅索引 .md 文件，同时忽略隐藏文件。它还实现了基于关键词的全文搜索功能，包括标题加权、词频加权、上下文提取和结果排序，最终返回带高亮和相关性评分的搜索结果。此外，它提供 Markdown 到 HTML 的渲染能力，用于前端展示。",
+    "detailed_description": "filesystem.rs is a model component for building and managing the documentation directory tree. Its core function is to recursively scan a specified directory, convert the filesystem structure into an in-memory tree data structure (DocumentTree), and support full-text search, Markdown rendering, and file content reading. It abstracts files and directories in the filesystem as FileNode nodes, and uses DocumentTree to uniformly manage file path mappings, search indexes, and statistics. This component is specifically optimized for Markdown files: it indexes only .md files and ignores hidden files. It also implements keyword-based full-text search, including title weighting, term-frequency weighting, context extraction, and result sorting, ultimately returning search results with highlighting and relevance scores. In addition, it provides Markdown-to-HTML rendering for frontend display.",
     "interfaces": [
       {
-        "description": "表示文件系统中单个节点（文件或目录）的数据结构，支持序列化和反序列化，用于跨服务传输或持久化。",
+        "description": "Data structure representing a single node (file or directory) in the filesystem; supports serialization and deserialization for cross-service transfer or persistence.",
         "interface_type": "struct",
         "name": "FileNode",
         "parameters": [
@@ -702,7 +702,7 @@
         "visibility": "pub"
       },
       {
-        "description": "表示一次搜索查询返回的单个结果，包含文件路径、匹配内容、标题和相关性评分。",
+        "description": "Represents a single result returned by a search query, including file path, matched content, title, and relevance score.",
         "interface_type": "struct",
         "name": "SearchResult",
         "parameters": [
@@ -741,7 +741,7 @@
         "visibility": "pub"
       },
       {
-        "description": "表示搜索匹配的具体行内容，包含高亮文本和上下文行，用于前端展示匹配上下文。",
+        "description": "Represents the specific line content of a search match, including highlighted text and context lines, for displaying match context in the frontend.",
         "interface_type": "struct",
         "name": "SearchMatch",
         "parameters": [
@@ -780,7 +780,7 @@
         "visibility": "pub"
       },
       {
-        "description": "文档树的主结构，封装了整个文件系统的树形结构、路径映射、搜索索引和统计信息，是组件对外暴露的核心接口。",
+        "description": "The main document tree structure, encapsulating the whole filesystem tree structure, path mappings, search index, and statistics; it is the core interface exposed by the component.",
         "interface_type": "struct",
         "name": "DocumentTree",
         "parameters": [
@@ -813,7 +813,7 @@
         "visibility": "pub"
       },
       {
-        "description": "存储文档树的统计信息，包括文件数、目录数和总大小。",
+        "description": "Stores document tree statistics, including file count, directory count, and total size.",
         "interface_type": "struct",
         "name": "TreeStats",
         "parameters": [
@@ -841,11 +841,11 @@
       }
     ],
     "responsibilities": [
-      "递归扫描目录并构建文件系统树形结构（DocumentTree）",
-      "维护文件路径到实际文件的映射（file_map）以支持快速内容读取",
-      "为 Markdown 文件构建全文搜索索引（search_index）",
-      "实现基于关键词的高级全文搜索功能，包含相关性评分和高亮显示",
-      "提供 Markdown 内容渲染为 HTML 的能力"
+      "Recursively scan directories and build the filesystem tree structure (DocumentTree)",
+      "Maintain mappings from file paths to actual files (file_map) to support fast content reading",
+      "Build a full-text search index (search_index) for Markdown files",
+      "Implement advanced keyword-based full-text search with relevance scoring and highlighting",
+      "Provide the capability to render Markdown content as HTML"
     ]
   },
   {
@@ -906,7 +906,7 @@
         "version": null
       }
     ],
-    "detailed_description": "该组件定义了一个名为 LithoBookError 的枚举类型，用于统一管理 LithoBook 应用中的所有自定义错误类型。它整合了标准库的 IO 错误、serde_json 的序列化错误，并定义了应用层特定的错误，如文件未找到、路径无效、目录扫描失败、服务器错误和配置错误。同时，通过实现 From<LithoBookError> for axum::http::StatusCode，该组件将应用层错误自动映射为 HTTP 状态码，为 Axum HTTP 框架提供标准化的错误响应机制，是系统错误处理的核心枢纽。",
+    "detailed_description": "This component defines an enum named LithoBookError for unified management of all custom error types in the LithoBook application. It integrates standard-library IO errors and serde_json serialization errors, and defines application-specific errors such as file not found, invalid path, directory scan failure, server error, and configuration error. By implementing From<LithoBookError> for axum::http::StatusCode, it automatically maps application-layer errors to HTTP status codes, providing a standardized error response mechanism for the Axum HTTP framework. It is the core hub of system error handling.",
     "interfaces": [
       {
         "description": null,
@@ -914,43 +914,43 @@
         "name": "LithoBookError",
         "parameters": [
           {
-            "description": "封装底层 I/O 操作失败",
+            "description": "Wrap underlying I/O operation failures",
             "is_optional": false,
             "name": "Io",
             "param_type": "std::io::Error"
           },
           {
-            "description": "封装 JSON 序列化/反序列化失败",
+            "description": "Wrap JSON serialization/deserialization failures",
             "is_optional": false,
             "name": "Json",
             "param_type": "serde_json::Error"
           },
           {
-            "description": "文件不存在，携带路径信息",
+            "description": "File does not exist, carrying path information",
             "is_optional": false,
             "name": "FileNotFound",
             "param_type": "FileNotFound"
           },
           {
-            "description": "路径格式非法，携带路径信息",
+            "description": "Invalid path format, carrying path information",
             "is_optional": false,
             "name": "InvalidPath",
             "param_type": "InvalidPath"
           },
           {
-            "description": "目录扫描过程中发生错误",
+            "description": "Error occurred during directory scanning",
             "is_optional": false,
             "name": "DirectoryScan",
             "param_type": "String"
           },
           {
-            "description": "服务器内部错误，携带描述信息",
+            "description": "Internal server error, carrying descriptive information",
             "is_optional": false,
             "name": "Server",
             "param_type": "String"
           },
           {
-            "description": "配置加载或解析失败",
+            "description": "Configuration loading or parsing failed",
             "is_optional": false,
             "name": "Config",
             "param_type": "String"
@@ -961,11 +961,11 @@
       }
     ],
     "responsibilities": [
-      "定义应用层统一错误枚举类型，集中管理所有错误场景",
-      "封装第三方库错误（std::io::Error, serde_json::Error）为应用内一致错误模型",
-      "实现 HTTP 状态码转换逻辑，为 Axum 框架提供错误响应映射",
-      "为上层服务提供清晰、可读、结构化的错误信息，便于调试与前端展示",
-      "作为错误传播的标准化接口，确保错误在系统各层间一致传递"
+      "Define a unified application-layer error enum and centrally manage all error scenarios",
+      "Wrap third-party library errors (std::io::Error, serde_json::Error) into a consistent in-application error model",
+      "Implement HTTP status code conversion logic and provide error response mappings for the Axum framework",
+      "Provide clear, readable, structured error information for upper-layer services, making debugging and frontend display easier",
+      "Serve as the standardized interface for error propagation, ensuring consistent error transfer across system layers"
     ]
   },
   {
@@ -1004,7 +1004,7 @@
         "StreamEvent"
       ],
       "name": "server.rs",
-      "source_summary": "use axum::{\n    Router,\n    extract::{Query, State},\n    http::StatusCode,\n    response::{Html, Json, Sse, sse::Event},\n    routing::{get, post},\n};\nuse futures::stream::Stream;\nuse serde::{Deserialize, Serialize};\nuse std::convert::Infallible;\nuse std::time::Duration;\nuse tower_http::cors::CorsLayer;\nuse tracing::{debug, error, info};\n\nuse crate::filesystem::{DocumentTree, SearchResult};\n\n#[derive(Clone)]\npub struct AppState {\n    pub doc_tree: DocumentTree,\n    pub docs_path: String,\n}\n\n#[derive(Deserialize)]\npub struct FileQuery {\n    file: Option<String>,\n}\n\n#[derive(Deserialize)]\npub struct SearchQuery {\n    q: Option<String>,\n}\n\n#[derive(Serialize)]\npub struct FileResponse {\n    pub content: String,\n    pub html: String,\n    pub path: String,\n    pub size: Option<u64>,\n    pub modified: Option<String>,\n}\n\n#[derive(Serialize)]\npub struct SearchResponse {\n    pub results: Vec<SearchResult>,\n    pub total: usize,\n    pub query: String,\n}\n\n#[derive(Serialize)]\npub struct StatsResponse {\n    pub total_files: usize,\n    pub total_dirs: usize,\n    pub total_size: u64,\n    pub formatted_size: String,\n}\n\n// AI助手相关的数据结构\n#[derive(Deserialize)]\npub struct ChatRequest {\n    pub message: String,\n    pub context: Option<String>,             // 当前文档内容作为上下文\n    pub history: Option<Vec<OpenAIMessage>>, // 历史会话消息\n}\n\n#[derive(Serialize, Deserialize)]\npub struct OpenAIMessage {\n    pub role: String,\n    pub content: String,\n}\n\n#[derive(Serialize, Deserialize)]\npub struct OpenAIRequest {\n    pub model: String,\n    pub messages: Vec<OpenAIMessage>,\n    pub temperature: f32,\n    pub max_tokens: i32,\n    pub stream: bool,\n}\n// 流式响应相关的数据结构\n#[derive(Deserialize)]\npub struct OpenAIStreamChoice {\n    pub delta: OpenAIStreamDelta,\n    pub finish_reason: Option<String>,\n}\n\n#[derive(Deserialize)]\npub struct OpenAIStreamDelta {\n    pub content: Option<String>,\n}\n\n#[derive(Deserialize)]\npub struct OpenAIStreamResponse {\n    pub choices: Vec<OpenAIStreamChoice>,\n}\n\n#[derive(Serialize)]\npub struct StreamEvent {\n    pub event_type: String,\n    pub content: Option<String>,\n    pub suggestions: Option<Vec<String>>,\n    pub finished: bool,\n}\n\n/// Create the main application router\npub fn create_router(doc_tree: DocumentTree, docs_path: String) -> Router {\n    let state = AppState {\n        doc_tree,\n        docs_path,\n    };\n\n    Router::new()\n        .route(\"/\", get(index_handler))\n        .route(\"/api/file\", get(get_file_handler))\n        .route(\"/api/tree\", get(get_tree_handler))\n        .route(\"/api/search\", get(search_handler))\n        .route(\"/api/stats\", get(stats_handler))\n        .route(\"/api/chat\", post(chat_stream_handler))\n        .route(\"/health\", get(health_handler))\n        .layer(CorsLayer::permissive())\n        .with_state(state)\n}\n\n/// Serve the main index page\nasync fn index_handler(State(state): State<AppState>) -> Result<Html<String>, StatusCode> {\n    debug!(\"Serving index page\");\n\n    let tree_json = serde_json::to_string(&state.doc_tree.root).map_err(|e| {\n        error!(\"Failed to serialize document tree: {}\", e);\n        StatusCode::INTERNAL_SERVER_ERROR\n    })?;\n\n    let html = generate_index_html(&tree_json, &state.docs_path);\n    Ok(Html(html))\n}\n\n/// Get file content and render as HTML\nasync fn get_file_handler(\n    Query(params): Query<FileQuery>,\n    State(state): State<AppState>,\n) -> Result<Json<FileResponse>, StatusCode> {\n    let file_path = params.file.ok_or_else(|| {\n        debug!(\"Missing file parameter in request\");\n        StatusCode::BAD_REQUEST\n    })?;\n\n    debug!(\"Requesting file: {}\", file_path);\n\n    let content = state.doc_tree.get_file_content(&file_path).map_err(|e| {\n        error!(\"Failed to read file {}: {}\", file_path, e);\n        StatusCode::NOT_FOUND\n    })?;\n\n    let html = state.doc_tree.render_markdown(&content);\n\n    // Get file metadata if available\n    let file_info = state\n        .doc_tree\n        .file_map\n        .get(&file_path)\n        .and_then(|path| std::fs::metadata(path).ok())\n        .map(|metadata| {\n            let size = metadata.len();\n            let modified = metadata.modified().ok().and_then(|time| {\n                time.duration_since(std::time::UNIX_EPOCH)\n                    .ok()\n                    .map(|d| {\n                        let datetime = chrono::DateTime::from_timestamp(d.as_secs() as i64, 0)?;\n                        Some(datetime.format(\"%Y-%m-%d %H:%M:%S\").to_string())\n                    })\n                    .flatten()\n            });\n            (size, modified)\n        });\n\n    let response = FileResponse {\n        content,\n        html,\n        path: file_path,\n        size: file_info.as_ref().map(|(size, _)| *size),\n        modified: file_info.and_then(|(_, modified)| modified),\n    };\n\n    info!(\"Successfully served file: {}\", response.path);\n    Ok(Json(response))\n}\n\n/// Get the document tree structure\nasync fn get_tree_handler(State(state): State<AppState>) -> Json<serde_json::Value> {\n    debug!(\"Serving document tree\");\n    Json(serde_json::to_value(&state.doc_tree.root).unwrap_or_default())\n}\n\n/// Search for content with full-text search\nasync fn search_handler(\n    Query(params): Query<SearchQuery>,\n    State(state): State<AppState>,\n) -> Result<Json<SearchResponse>, StatusCode> {\n    let query = params.q.unwrap_or_default();\n\n    if query.trim().is_empty() {\n        return Ok(Json(SearchResponse {\n            results: vec![],\n            total: 0,\n            query: query.clone(),\n        }));\n    }\n\n    debug!(\"Searching for: {}\", query);\n\n    let results = state.doc_tree.search_content(&query);\n    let total = results.len();\n\n    debug!(\"Found {} results matching query: {}\", total, query);\n\n    Ok(Json(SearchResponse {\n        results,\n        total,\n        query,\n    }))\n}\n\n/// Get statistics about the document tree\nasync fn stats_handler(State(state): State<AppState>) -> Json<StatsResponse> {\n    let stats = state.doc_tree.get_stats();\n\n    let formatted_size = format_bytes(stats.total_size);\n\n    Json(StatsResponse {\n        total_files: stats.total_files,\n        total_dirs: stats.total_dirs,\n        total_size: stats.total_size,\n        formatted_size,\n    })\n}\n\n/// Health check endpoint\nasync fn health_handler() -> Json<serde_json::Value> {\n    Json(serde_json::json!({\n        \"status\": \"healthy\",\n        \"timestamp\": chrono::Utc::now().to_rfc3339(),\n        \"version\": env!(\"CARGO_PKG_VERSION\")\n    }))\n}\n\n/// AI助手流式聊天处理函数\nasync fn chat_stream_handler(\n    State(state): State<AppState>,\n    Json(request): Json<ChatRequest>,\n) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {\n    debug!(\"AI助手收到消息: {}\", request.message);\n\n    let stream = async_stream::stream! {\n        match call_openai_stream_api(\n            &request.message,\n            request.context.as_deref(),\n            request.history,\n            &state.docs_path,\n        ).await {\n            Ok(mut response_stream) => {\n                let mut full_response = String::new();\n\n                // 发送开始事件\n                yield Ok(Event::default()\n                    .event(\"start\")\n                    .data(serde_json::to_string(&StreamEvent {\n                        event_type: \"start\".to_string(),\n                        content: None,\n                        suggestions: None,\n                        finished: false,\n                    }).unwrap_or_default()));\n\n                // 处理流式响应\n                while let Some(chunk) = response_stream.recv().await {\n                    match chunk {\n                        Ok(content) => {\n                            full_response.push_str(&content);\n\n                            // 发送内容块\n                            yield Ok(Event::default()\n                                .event(\"content\")\n                                .data(serde_json::to_string(&StreamEvent {\n                                    event_type: \"content\".to_string(),\n                                    content: Some(content),\n                                    suggestions: None,\n                                    finished: false,\n                                }).unwrap_or_default()));\n                        }\n                        Err(e) => {\n                            error!(\"流式响应错误: {}\", e);\n                            yield Ok(Event::default()\n                                .event(\"error\")\n                                .data(serde_json::to_string(&StreamEvent {\n                                    event_type: \"error\".to_string(),\n                                    content: Some(\"抱歉，我现在无法回答您的问题。请稍后再试。\".to_string()),\n                                    suggestions: None,\n                                    finished: true,\n                                }).unwrap_or_default()));\n                            return;\n                        }\n                    }\n                }\n\n                // 生成推荐问题\n                let suggestions = generate_suggestions(&full_response, request.context.as_deref());\n\n                // 发送完成事件\n                yield Ok(Event::default()\n                    .event(\"finish\")\n                    .data(serde_json::to_string(&StreamEvent {\n                        event_type: \"finish\".to_string(),\n                        content: None,\n                        suggestions: Some(suggestions),\n                        finished: true,\n                    }).unwrap_or_default()));\n            }\n            Err(e) => {\n                error!(\"调用AI API失败: {}\", e);\n                yield Ok(Event::default()\n                    .event(\"error\")\n                    .data(serde_json::to_string(&StreamEvent {\n                        event_type: \"error\".to_string(),\n                        content: Some(\"抱歉，我现在无法回答您的问题。请稍后再试。\".to_string()),\n                        suggestions: None,\n                        finished: true,\n                    }).unwrap_or_default()));\n            }\n        }\n    };\n\n    Sse::new(stream).keep_alive(\n        axum::response::sse::KeepAlive::new()\n            .interval(Duration::from_secs(1))\n            .text(\"keep-alive-text\"),\n    )\n}\n\n/// 调用OpenAI兼容的流式API\nasync fn call_openai_stream_api(\n    message: &str,\n    context: Option<&str>,\n    history: Option<Vec<OpenAIMessage>>,\n    docs_path: &str,\n) -> Result<\n    tokio::sync::mpsc::Receiver<Result<String, Box<dyn std::error::Error + Send + Sync>>>,\n    Box<dyn std::error::Error + Send + Sync>,\n> {\n    let client = reqwest::Client::new();\n\n    // 构建系统提示词\n    let mut system_prompt = \"你是一个专业的文档助手，专门帮助用户理解和分析技术文档。请用中文回答问题，回答要准确、简洁、有帮助。\".to_string();\n\n    // 添加架构概览文档作为背景材料\n    let architecture_path = std::path::Path::new(docs_path).join(\"2、架构概览.md\");\n    if let Ok(architecture_content) = std::fs::read_to_string(&architecture_path) {\n        system_prompt.push_str(&format!(\"\\n\\n用户所关注项目的架构概览：\\n{}\", architecture_content));\n    }\n\n    if let Some(ctx) = context {\n        system_prompt.push_str(&format!(\"\\n\\n用户当前正在查看的文档内容：\\n{}\", ctx));\n    }\n\n    // 构建消息列表\n    let mut messages = vec![OpenAIMessage {\n        role: \"system\".to_string(),\n        content: system_prompt,\n    }];\n\n    // 添加历史消息（如果有的话）\n    if let Some(hist) = history {\n        // 限制历史消息数量，避免请求过大\n        let max_history = 10; // 最多保留10轮对话\n        let start_index = if hist.len() > max_history {\n            hist.len() - max_history\n        } else {\n            0\n        };\n        messages.extend(hist.into_iter().skip(start_index));\n    }\n\n    // 添加当前用户消息\n    messages.push(OpenAIMessage {\n        role: \"user\".to_string(),\n        content: message.to_string(),\n    });\n\n    let request_body = OpenAIRequest {\n        model: \"GLM-4.5-Flash\".to_string(),\n        messages,\n        temperature: 0.7,\n        max_tokens: 16384,\n        stream: true, // 启用流式响应\n    };\n\n    let response = client\n        .post(\"https://open.bigmodel.cn/api/paas/v4/chat/completions\")\n        .header(\n            \"Authorization\",\n            \"Bearer your-llm-key\",\n        )\n        .header(\"Content-Type\", \"application/json\")\n        .json(&request_body)\n        .send()\n        .await?;\n\n    if !response.status().is_success() {\n        let status = response.status();\n        let text = response.text().await.unwrap_or_default();\n        return Err(format!(\"API请求失败: {} - {}\", status, text).into());\n    }\n\n    // 创建通道来传递流式数据\n    let (tx, rx) = tokio::sync::mpsc::channel(100);\n\n    // 在后台任务中处理流式响应\n    tokio::spawn(async move {\n        use futures::StreamExt;\n\n        let mut stream = response.bytes_stream();\n        let mut buffer = String::new();\n\n        while let Some(chunk_result) = stream.next().await {\n            match chunk_result {\n                Ok(chunk) => {\n                    let chunk_str = String::from_utf8_lossy(&chunk);\n                    buffer.push_str(&chunk_str);\n\n                    // 处理SSE格式的数据\n                    let lines: Vec<&str> = buffer.lines().collect();\n                    let mut processed_lines = 0;\n\n                    for line in &lines {\n                        if line.starts_with(\"data: \") {\n                            let data = &line[6..]; // 移除 \"data: \" 前缀\n\n                            if data == \"[DONE]\" {\n                                // 流结束\n                                return;\n                            }\n\n                            // 尝试解析JSON\n                            if let Ok(stream_response) =\n                                serde_json::from_str::<OpenAIStreamResponse>(data)\n                            {\n                                if let Some(choice) = stream_response.choices.first() {\n                                    if let Some(content) = &choice.delta.content {\n                                        if !content.is_empty() {\n                                            if tx.send(Ok(content.clone())).await.is_err() {\n                                                return; // 接收端已关闭\n                                            }\n                                        }\n                                    }\n\n                                    // 检查是否完成\n                                    if choice.finish_reason.is_some() {\n                                        return;\n                                    }\n                                }\n                            }\n                            processed_lines += 1;\n                        } else if line.is_empty() {\n                            processed_lines += 1;\n                        } else {\n                            processed_lines += 1;\n                        }\n                    }\n\n                    // 保留未处理的部分\n                    if processed_lines < lines.len() {\n                        buffer = lines[processed_lines..].join(\"\\n\");\n                    } else {\n                        buffer.clear();\n                    }\n                }\n                Err(e) => {\n                    let _ = tx.send(Err(format!(\"流式响应错误: {}\", e).into())).await;\n                    return;\n                }\n            }\n        }\n    });\n\n    Ok(rx)\n}\n\n/// 生成推荐的追问问题\nfn generate_suggestions(ai_response: &str, _context: Option<&str>) -> Vec<String> {\n    let mut suggestions = Vec::new();\n\n    // 基于AI回答内容生成相关问题\n    if ai_response.contains(\"架构\") || ai_response.contains(\"设计\") {\n        suggestions.push(\"这个架构的优缺点是什么？\".to_string());\n        suggestions.push(\"有哪些替代的设计方案？\".to_string());\n    }\n\n    if ai_response.contains(\"性能\") || ai_response.contains(\"耗时\") {\n        suggestions.push(\"项目使用了哪些性能优化策略？\".to_string());\n        suggestions.push(\"如何优化项目中的性能热点？\".to_string());\n    }\n\n    if ai_response.contains(\"配置\") || ai_response.contains(\"参数\") {\n        suggestions.push(\"这些配置的默认值是什么？\".to_string());\n        suggestions.push(\"如何调优这些参数？\".to_string());\n    }\n\n    // 如果没有特定的建议，提供通用的\n    if suggestions.is_empty() {\n        suggestions.push(\"能详细解释一下吗？\".to_string());\n        suggestions.push(\"有相关的示例吗？\".to_string());\n        suggestions.push(\"这个有什么最佳实践？\".to_string());\n    }\n\n    // 限制建议数量\n    suggestions.truncate(3);\n    suggestions\n}\n\n/// Format bytes into human-readable format\nfn format_bytes(bytes: u64) -> String {\n    const UNITS: &[&str] = &[\"B\", \"KB\", \"MB\", \"GB\", \"TB\"];\n\n    if bytes == 0 {\n        return \"0 B\".to_string();\n    }\n\n    let mut size = bytes as f64;\n    let mut unit_index = 0;\n\n    while size >= 1024.0 && unit_index < UNITS.len() - 1 {\n        size /= 1024.0;\n        unit_index += 1;\n    }\n\n    if unit_index == 0 {\n        format!(\"{} {}\", bytes, UNITS[unit_index])\n    } else {\n        format!(\"{:.1} {}\", size, UNITS[unit_index])\n    }\n}\n\n/// Generate the main HTML page\nfn generate_index_html(tree_json: &str, docs_path: &str) -> String {\n    // Read the template file\n    let template_content = include_str!(\"../templates/index.html.tpl\");\n\n    // Replace the placeholders with actual data\n    template_content\n        .replace(\"{{ tree_json|safe }}\", tree_json)\n        .replace(\"{{ docs_path }}\", docs_path)\n}\n"
+      "source_summary": "use axum::{\n    Router,\n    extract::{Query, State},\n    http::StatusCode,\n    response::{Html, Json, Sse, sse::Event},\n    routing::{get, post},\n};\nuse futures::stream::Stream;\nuse serde::{Deserialize, Serialize};\nuse std::convert::Infallible;\nuse std::time::Duration;\nuse tower_http::cors::CorsLayer;\nuse tracing::{debug, error, info};\n\nuse crate::filesystem::{DocumentTree, SearchResult};\n\n#[derive(Clone)]\npub struct AppState {\n    pub doc_tree: DocumentTree,\n    pub docs_path: String,\n}\n\n#[derive(Deserialize)]\npub struct FileQuery {\n    file: Option<String>,\n}\n\n#[derive(Deserialize)]\npub struct SearchQuery {\n    q: Option<String>,\n}\n\n#[derive(Serialize)]\npub struct FileResponse {\n    pub content: String,\n    pub html: String,\n    pub path: String,\n    pub size: Option<u64>,\n    pub modified: Option<String>,\n}\n\n#[derive(Serialize)]\npub struct SearchResponse {\n    pub results: Vec<SearchResult>,\n    pub total: usize,\n    pub query: String,\n}\n\n#[derive(Serialize)]\npub struct StatsResponse {\n    pub total_files: usize,\n    pub total_dirs: usize,\n    pub total_size: u64,\n    pub formatted_size: String,\n}\n\n// AI-assistant-related data structures\n#[derive(Deserialize)]\npub struct ChatRequest {\n    pub message: String,\n    pub context: Option<String>,             // current document content as context\n    pub history: Option<Vec<OpenAIMessage>>, // conversation history messages\n}\n\n#[derive(Serialize, Deserialize)]\npub struct OpenAIMessage {\n    pub role: String,\n    pub content: String,\n}\n\n#[derive(Serialize, Deserialize)]\npub struct OpenAIRequest {\n    pub model: String,\n    pub messages: Vec<OpenAIMessage>,\n    pub temperature: f32,\n    pub max_tokens: i32,\n    pub stream: bool,\n}\n// streaming-response-related data structures\n#[derive(Deserialize)]\npub struct OpenAIStreamChoice {\n    pub delta: OpenAIStreamDelta,\n    pub finish_reason: Option<String>,\n}\n\n#[derive(Deserialize)]\npub struct OpenAIStreamDelta {\n    pub content: Option<String>,\n}\n\n#[derive(Deserialize)]\npub struct OpenAIStreamResponse {\n    pub choices: Vec<OpenAIStreamChoice>,\n}\n\n#[derive(Serialize)]\npub struct StreamEvent {\n    pub event_type: String,\n    pub content: Option<String>,\n    pub suggestions: Option<Vec<String>>,\n    pub finished: bool,\n}\n\n/// Create the main application router\npub fn create_router(doc_tree: DocumentTree, docs_path: String) -> Router {\n    let state = AppState {\n        doc_tree,\n        docs_path,\n    };\n\n    Router::new()\n        .route(\"/\", get(index_handler))\n        .route(\"/api/file\", get(get_file_handler))\n        .route(\"/api/tree\", get(get_tree_handler))\n        .route(\"/api/search\", get(search_handler))\n        .route(\"/api/stats\", get(stats_handler))\n        .route(\"/api/chat\", post(chat_stream_handler))\n        .route(\"/health\", get(health_handler))\n        .layer(CorsLayer::permissive())\n        .with_state(state)\n}\n\n/// Serve the main index page\nasync fn index_handler(State(state): State<AppState>) -> Result<Html<String>, StatusCode> {\n    debug!(\"Serving index page\");\n\n    let tree_json = serde_json::to_string(&state.doc_tree.root).map_err(|e| {\n        error!(\"Failed to serialize document tree: {}\", e);\n        StatusCode::INTERNAL_SERVER_ERROR\n    })?;\n\n    let html = generate_index_html(&tree_json, &state.docs_path);\n    Ok(Html(html))\n}\n\n/// Get file content and render as HTML\nasync fn get_file_handler(\n    Query(params): Query<FileQuery>,\n    State(state): State<AppState>,\n) -> Result<Json<FileResponse>, StatusCode> {\n    let file_path = params.file.ok_or_else(|| {\n        debug!(\"Missing file parameter in request\");\n        StatusCode::BAD_REQUEST\n    })?;\n\n    debug!(\"Requesting file: {}\", file_path);\n\n    let content = state.doc_tree.get_file_content(&file_path).map_err(|e| {\n        error!(\"Failed to read file {}: {}\", file_path, e);\n        StatusCode::NOT_FOUND\n    })?;\n\n    let html = state.doc_tree.render_markdown(&content);\n\n    // Get file metadata if available\n    let file_info = state\n        .doc_tree\n        .file_map\n        .get(&file_path)\n        .and_then(|path| std::fs::metadata(path).ok())\n        .map(|metadata| {\n            let size = metadata.len();\n            let modified = metadata.modified().ok().and_then(|time| {\n                time.duration_since(std::time::UNIX_EPOCH)\n                    .ok()\n                    .map(|d| {\n                        let datetime = chrono::DateTime::from_timestamp(d.as_secs() as i64, 0)?;\n                        Some(datetime.format(\"%Y-%m-%d %H:%M:%S\").to_string())\n                    })\n                    .flatten()\n            });\n            (size, modified)\n        });\n\n    let response = FileResponse {\n        content,\n        html,\n        path: file_path,\n        size: file_info.as_ref().map(|(size, _)| *size),\n        modified: file_info.and_then(|(_, modified)| modified),\n    };\n\n    info!(\"successfully served file: {}\", response.path);\n    Ok(Json(response))\n}\n\n/// Get the document tree structure\nasync fn get_tree_handler(State(state): State<AppState>) -> Json<serde_json::Value> {\n    debug!(\"Serving document tree\");\n    Json(serde_json::to_value(&state.doc_tree.root).unwrap_or_default())\n}\n\n/// Search for content with full-text search\nasync fn search_handler(\n    Query(params): Query<SearchQuery>,\n    State(state): State<AppState>,\n) -> Result<Json<SearchResponse>, StatusCode> {\n    let query = params.q.unwrap_or_default();\n\n    if query.trim().is_empty() {\n        return Ok(Json(SearchResponse {\n            results: vec![],\n            total: 0,\n            query: query.clone(),\n        }));\n    }\n\n    debug!(\"Searching for: {}\", query);\n\n    let results = state.doc_tree.search_content(&query);\n    let total = results.len();\n\n    debug!(\"Found {} results matching query: {}\", total, query);\n\n    Ok(Json(SearchResponse {\n        results,\n        total,\n        query,\n    }))\n}\n\n/// Get statistics about the document tree\nasync fn stats_handler(State(state): State<AppState>) -> Json<StatsResponse> {\n    let stats = state.doc_tree.get_stats();\n\n    let formatted_size = format_bytes(stats.total_size);\n\n    Json(StatsResponse {\n        total_files: stats.total_files,\n        total_dirs: stats.total_dirs,\n        total_size: stats.total_size,\n        formatted_size,\n    })\n}\n\n/// Health check endpoint\nasync fn health_handler() -> Json<serde_json::Value> {\n    Json(serde_json::json!({\n        \"status\": \"healthy\",\n        \"timestamp\": chrono::Utc::now().to_rfc3339(),\n        \"version\": env!(\"CARGO_PKG_VERSION\")\n    }))\n}\n\n/// AI assistant streaming chat handler function\nasync fn chat_stream_handler(\n    State(state): State<AppState>,\n    Json(request): Json<ChatRequest>,\n) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {\n    debug!(\"AI assistant received message: {}\", request.message);\n\n    let stream = async_stream::stream! {\n        match call_openai_stream_api(\n            &request.message,\n            request.context.as_deref(),\n            request.history,\n            &state.docs_path,\n        ).await {\n            Ok(mut response_stream) => {\n                let mut full_response = String::new();\n\n                // send start event\n                yield Ok(Event::default()\n                    .event(\"start\")\n                    .data(serde_json::to_string(&StreamEvent {\n                        event_type: \"start\".to_string(),\n                        content: None,\n                        suggestions: None,\n                        finished: false,\n                    }).unwrap_or_default()));\n\n                // handle streaming response\n                while let Some(chunk) = response_stream.recv().await {\n                    match chunk {\n                        Ok(content) => {\n                            full_response.push_str(&content);\n\n                            // send content chunk\n                            yield Ok(Event::default()\n                                .event(\"content\")\n                                .data(serde_json::to_string(&StreamEvent {\n                                    event_type: \"content\".to_string(),\n                                    content: Some(content),\n                                    suggestions: None,\n                                    finished: false,\n                                }).unwrap_or_default()));\n                        }\n                        Err(e) => {\n                            error!(\"streaming response error: {}\", e);\n                            yield Ok(Event::default()\n                                .event(\"error\")\n                                .data(serde_json::to_string(&StreamEvent {\n                                    event_type: \"error\".to_string(),\n                                    content: Some(\"Sorry, I cannot answer your question right now. Please try again later..\".to_string()),\n                                    suggestions: None,\n                                    finished: true,\n                                }).unwrap_or_default()));\n                            return;\n                        }\n                    }\n                }\n\n                // generate suggested questions\n                let suggestions = generate_suggestions(&full_response, request.context.as_deref());\n\n                // send completion event\n                yield Ok(Event::default()\n                    .event(\"finish\")\n                    .data(serde_json::to_string(&StreamEvent {\n                        event_type: \"finish\".to_string(),\n                        content: None,\n                        suggestions: Some(suggestions),\n                        finished: true,\n                    }).unwrap_or_default()));\n            }\n            Err(e) => {\n                error!(\"failed to call AI API: {}\", e);\n                yield Ok(Event::default()\n                    .event(\"error\")\n                    .data(serde_json::to_string(&StreamEvent {\n                        event_type: \"error\".to_string(),\n                        content: Some(\"Sorry, I cannot answer your question right now. Please try again later..\".to_string()),\n                        suggestions: None,\n                        finished: true,\n                    }).unwrap_or_default()));\n            }\n        }\n    };\n\n    Sse::new(stream).keep_alive(\n        axum::response::sse::KeepAlive::new()\n            .interval(Duration::from_secs(1))\n            .text(\"keep-alive-text\"),\n    )\n}\n\n/// call OpenAI-compatible streaming API\nasync fn call_openai_stream_api(\n    message: &str,\n    context: Option<&str>,\n    history: Option<Vec<OpenAIMessage>>,\n    docs_path: &str,\n) -> Result<\n    tokio::sync::mpsc::Receiver<Result<String, Box<dyn std::error::Error + Send + Sync>>>,\n    Box<dyn std::error::Error + Send + Sync>,\n> {\n    let client = reqwest::Client::new();\n\n    // build system prompt\n    let mut system_prompt = \"You are a professional documentation assistant dedicated to helping users understand and analyze technical documentation. Answer accurately, concisely, and helpfully..\".to_string();\n\n    // add architecture overview document as background material\n    let architecture_path = std::path::Path::new(docs_path).join(\"2-architecture-overview.md\");\n    if let Ok(architecture_content) = std::fs::read_to_string(&architecture_path) {\n        system_prompt.push_str(&format!(\"\\n\\narchitecture overview of the project the user is focused on:\\n{}\", architecture_content));\n    }\n\n    if let Some(ctx) = context {\n        system_prompt.push_str(&format!(\"\\n\\ndocument content currently being viewed by the user:\\n{}\", ctx));\n    }\n\n    // build message list\n    let mut messages = vec![OpenAIMessage {\n        role: \"system\".to_string(),\n        content: system_prompt,\n    }];\n\n    // add history messages (if any)\n    if let Some(hist) = history {\n        // limit history message count to avoid oversized requests\n        let max_history = 10; // keep at most 10 conversation rounds\n        let start_index = if hist.len() > max_history {\n            hist.len() - max_history\n        } else {\n            0\n        };\n        messages.extend(hist.into_iter().skip(start_index));\n    }\n\n    // add current user message\n    messages.push(OpenAIMessage {\n        role: \"user\".to_string(),\n        content: message.to_string(),\n    });\n\n    let request_body = OpenAIRequest {\n        model: \"openai/gpt-4.1\".to_string(),\n        messages,\n        temperature: 0.7,\n        max_tokens: 16384,\n        stream: true, // enable streaming response\n    };\n\n    let response = client\n        .post(\"https://models.github.ai/inference/chat/completions\")\n        .header(\n            \"Authorization\",\n            \"Bearer <GITHUB_TOKEN>\",\n        )\n        .header(\"Content-Type\", \"application/json\")\n        .json(&request_body)\n        .send()\n        .await?;\n\n    if !response.status().is_success() {\n        let status = response.status();\n        let text = response.text().await.unwrap_or_default();\n        return Err(format!(\"API request failed: {} - {}\", status, text).into());\n    }\n\n    // create channel to pass streaming data\n    let (tx, rx) = tokio::sync::mpsc::channel(100);\n\n    // handle streaming response in background task\n    tokio::spawn(async move {\n        use futures::StreamExt;\n\n        let mut stream = response.bytes_stream();\n        let mut buffer = String::new();\n\n        while let Some(chunk_result) = stream.next().await {\n            match chunk_result {\n                Ok(chunk) => {\n                    let chunk_str = String::from_utf8_lossy(&chunk);\n                    buffer.push_str(&chunk_str);\n\n                    // process SSE-formatted data\n                    let lines: Vec<&str> = buffer.lines().collect();\n                    let mut processed_lines = 0;\n\n                    for line in &lines {\n                        if line.starts_with(\"data: \") {\n                            let data = &line[6..]; // remove \"data: \" prefix\n\n                            if data == \"[DONE]\" {\n                                // stream ended\n                                return;\n                            }\n\n                            // try to parse JSON\n                            if let Ok(stream_response) =\n                                serde_json::from_str::<OpenAIStreamResponse>(data)\n                            {\n                                if let Some(choice) = stream_response.choices.first() {\n                                    if let Some(content) = &choice.delta.content {\n                                        if !content.is_empty() {\n                                            if tx.send(Ok(content.clone())).await.is_err() {\n                                                return; // receiver has been closed\n                                            }\n                                        }\n                                    }\n\n                                    // check whether complete\n                                    if choice.finish_reason.is_some() {\n                                        return;\n                                    }\n                                }\n                            }\n                            processed_lines += 1;\n                        } else if line.is_empty() {\n                            processed_lines += 1;\n                        } else {\n                            processed_lines += 1;\n                        }\n                    }\n\n                    // keep unprocessed part\n                    if processed_lines < lines.len() {\n                        buffer = lines[processed_lines..].join(\"\\n\");\n                    } else {\n                        buffer.clear();\n                    }\n                }\n                Err(e) => {\n                    let _ = tx.send(Err(format!(\"streaming response error: {}\", e).into())).await;\n                    return;\n                }\n            }\n        }\n    });\n\n    Ok(rx)\n}\n\n/// generate recommended follow-up questions\nfn generate_suggestions(ai_response: &str, _context: Option<&str>) -> Vec<String> {\n    let mut suggestions = Vec::new();\n\n    // generate related questions based on AI answer content\n    if ai_response.contains(\"architecture\") || ai_response.contains(\"design\") {\n        suggestions.push(\"What are the advantages and disadvantages of this architecture??\".to_string());\n        suggestions.push(\"What alternative designs are available??\".to_string());\n    }\n\n    if ai_response.contains(\"performance\") || ai_response.contains(\"latency\") {\n        suggestions.push(\"What performance optimization strategies does the project use??\".to_string());\n        suggestions.push(\"How can performance hotspots in the project be optimized??\".to_string());\n    }\n\n    if ai_response.contains(\"configuration\") || ai_response.contains(\"parameters\") {\n        suggestions.push(\"What are the default values of these configurations??\".to_string());\n        suggestions.push(\"How can these parameters be tuned?\".to_string());\n    }\n\n    // if there are no specific suggestions, provide general ones\n    if suggestions.is_empty() {\n        suggestions.push(\"Can you explain this in detail??\".to_string());\n        suggestions.push(\"Are there related examples??\".to_string());\n        suggestions.push(\"What best practices apply here?\".to_string());\n    }\n\n    // limit suggestion count\n    suggestions.truncate(3);\n    suggestions\n}\n\n/// Format bytes into human-readable format\nfn format_bytes(bytes: u64) -> String {\n    const UNITS: &[&str] = &[\"B\", \"KB\", \"MB\", \"GB\", \"TB\"];\n\n    if bytes == 0 {\n        return \"0 B\".to_string();\n    }\n\n    let mut size = bytes as f64;\n    let mut unit_index = 0;\n\n    while size >= 1024.0 && unit_index < UNITS.len() - 1 {\n        size /= 1024.0;\n        unit_index += 1;\n    }\n\n    if unit_index == 0 {\n        format!(\"{} {}\", bytes, UNITS[unit_index])\n    } else {\n        format!(\"{:.1} {}\", size, UNITS[unit_index])\n    }\n}\n\n/// Generate the main HTML page\nfn generate_index_html(tree_json: &str, docs_path: &str) -> String {\n    // Read the template file\n    let template_content = include_str!(\"../templates/index.html.tpl\");\n\n    // Replace the placeholders with actual data\n    template_content\n        .replace(\"{{ tree_json|safe }}\", tree_json)\n        .replace(\"{{ docs_path }}\", docs_path)\n}\n"
     },
     "complexity_metrics": {
       "cohesion_score": 0.85,
@@ -1081,10 +1081,10 @@
         "version": null
       }
     ],
-    "detailed_description": "该组件是基于Axum框架构建的HTTP API服务端核心，提供文档浏览、全文搜索、系统统计和AI助手流式对话四大核心功能。它通过定义一系列路由处理器处理前端请求，包括获取文件内容（Markdown渲染为HTML）、获取目录树结构、执行全文搜索、返回系统统计信息、健康检查，以及最重要的AI聊天流式响应。AI聊天功能通过调用智谱AI的OpenAI兼容API，构建包含系统提示词、上下文和历史会话的请求，接收流式响应并转换为SSE事件流返回给前端。组件还包含辅助函数用于生成推荐问题、格式化字节数和生成HTML首页模板。整个服务通过AppState共享文档树状态，支持高并发请求处理。",
+    "detailed_description": "This component is the core HTTP API server built on the Axum framework. It provides four main capabilities: document browsing, full-text search, system statistics, and AI assistant streaming conversations. It defines route handlers that process frontend requests, including retrieving file content (rendering Markdown as HTML), retrieving the directory tree, executing full-text search, returning system statistics, health checks, and AI chat streaming responses. The AI chat function calls the GitHub Models OpenAI-compatible API, builds requests containing the system prompt, context, and history messages, and uses Server-Sent Events (SSE) to return AI responses to the frontend chunk by chunk. This component also generates the homepage HTML template and is the main boundary layer for user-system interaction.",
     "interfaces": [
       {
-        "description": "应用状态容器，用于在多个请求处理器间共享文档树和文档根路径",
+        "description": "Application state container used to share the document tree and document root path across multiple request handlers",
         "interface_type": "struct",
         "name": "AppState",
         "parameters": [
@@ -1105,7 +1105,7 @@
         "visibility": "pub"
       },
       {
-        "description": "获取文件内容请求的查询参数结构",
+        "description": "Query argument structure for file content requests",
         "interface_type": "struct",
         "name": "FileQuery",
         "parameters": [
@@ -1120,7 +1120,7 @@
         "visibility": "pub"
       },
       {
-        "description": "全文搜索请求的查询参数结构",
+        "description": "Query argument structure for full-text search requests",
         "interface_type": "struct",
         "name": "SearchQuery",
         "parameters": [
@@ -1135,7 +1135,7 @@
         "visibility": "pub"
       },
       {
-        "description": "文件内容响应的数据结构，包含原始内容、渲染后的HTML和元数据",
+        "description": "Data structure for file content responses, containing raw content, rendered HTML, and metadata",
         "interface_type": "struct",
         "name": "FileResponse",
         "parameters": [
@@ -1174,7 +1174,7 @@
         "visibility": "pub"
       },
       {
-        "description": "搜索结果响应的数据结构",
+        "description": "Data structure for search result responses",
         "interface_type": "struct",
         "name": "SearchResponse",
         "parameters": [
@@ -1201,7 +1201,7 @@
         "visibility": "pub"
       },
       {
-        "description": "系统统计信息响应的数据结构",
+        "description": "Data structure for system statistics responses",
         "interface_type": "struct",
         "name": "StatsResponse",
         "parameters": [
@@ -1234,7 +1234,7 @@
         "visibility": "pub"
       },
       {
-        "description": "AI聊天请求的输入数据结构",
+        "description": "Input data structure for AI chat requests",
         "interface_type": "struct",
         "name": "ChatRequest",
         "parameters": [
@@ -1261,7 +1261,7 @@
         "visibility": "pub"
       },
       {
-        "description": "与OpenAI API通信的消息结构，表示对话中的单条消息",
+        "description": "Message structure for communicating with the OpenAI API, representing a single message in a conversation",
         "interface_type": "struct",
         "name": "OpenAIMessage",
         "parameters": [
@@ -1282,7 +1282,7 @@
         "visibility": "pub"
       },
       {
-        "description": "向OpenAI兼容API发送请求的完整参数结构",
+        "description": "Complete argument structure for sending requests to an OpenAI-compatible API",
         "interface_type": "struct",
         "name": "OpenAIRequest",
         "parameters": [
@@ -1321,7 +1321,7 @@
         "visibility": "pub"
       },
       {
-        "description": "解析OpenAI流式响应中单个选择（choice）的结构",
+        "description": "Structure for parsing a single choice in an OpenAI streaming response",
         "interface_type": "struct",
         "name": "OpenAIStreamChoice",
         "parameters": [
@@ -1342,7 +1342,7 @@
         "visibility": "pub"
       },
       {
-        "description": "表示流式响应中增量内容的结构",
+        "description": "Structure representing incremental content in a streaming response",
         "interface_type": "struct",
         "name": "OpenAIStreamDelta",
         "parameters": [
@@ -1357,7 +1357,7 @@
         "visibility": "pub"
       },
       {
-        "description": "OpenAI流式响应的顶层结构",
+        "description": "Top-level structure of an OpenAI streaming response",
         "interface_type": "struct",
         "name": "OpenAIStreamResponse",
         "parameters": [
@@ -1372,7 +1372,7 @@
         "visibility": "pub"
       },
       {
-        "description": "前端SSE事件监听器接收的标准化事件结构",
+        "description": "Standardized event structure received by the frontend SSE event listener",
         "interface_type": "struct",
         "name": "StreamEvent",
         "parameters": [
@@ -1406,11 +1406,11 @@
       }
     ],
     "responsibilities": [
-      "暴露RESTful API接口供前端调用，包括文件读取、搜索、统计和AI对话",
-      "管理并共享文档树状态（DocumentTree），作为所有数据操作的核心数据源",
-      "实现AI助手流式响应功能，集成外部大模型API并转换为SSE事件流",
-      "处理前端请求参数，进行输入校验和错误处理，返回标准化JSON响应",
-      "渲染Markdown内容为HTML，并生成动态首页模板"
+      "Expose RESTful API interfaces for frontend calls, including file reading, search, statistics, and AI conversations",
+      "Manage and share document tree state (DocumentTree) as the core data source for all data operations",
+      "Implement AI assistant streaming responses, integrate with external large-model APIs, and convert responses into SSE event streams",
+      "Process frontend request arguments, perform input validation and error handling, and return standardized JSON responses",
+      "Render Markdown content as HTML and generate the dynamic homepage template"
     ]
   },
   {
@@ -1456,36 +1456,36 @@
         "version": null
       }
     ],
-    "detailed_description": "该组件是Litho-Book项目的命令行入口，使用clap库定义命令行参数解析结构体Args。它负责解析用户输入的文档目录路径、服务端口、主机地址、是否自动打开浏览器以及是否启用详细日志等配置。通过实现validate方法对输入参数进行合法性校验，确保文档目录存在且为目录，同时检查低权限端口（<1024）是否具备管理员权限。此外，提供server_url和bind_address两个辅助方法用于生成服务地址字符串。组件还包含一个平台相关的is_privileged函数，用于检测当前进程是否具有管理员权限，以支持跨平台的端口权限检查。",
+    "detailed_description": "This component is the command-line entry point for the Litho Book project. It uses the clap library to define the Args command-line argument parsing struct. It parses configuration such as the documentation directory path, service port, host address, whether to automatically open the browser, and whether to enable verbose logging. The validate method validates input arguments, ensuring the documentation directory exists and is a directory, and checks whether administrator privileges are available for privileged ports (<1024). It also provides the helper methods server_url and bind_address for generating service address strings. The component includes the platform-specific is_privileged function to detect whether the current process has administrator privileges and support cross-platform port-permission checks.",
     "interfaces": [],
     "responsibilities": [
-      "解析用户通过命令行传入的配置参数",
-      "验证文档目录路径的有效性（存在且为目录）",
-      "检查低权限端口（<1024）是否具备管理员权限",
-      "提供服务URL和绑定地址的生成逻辑",
-      "封装跨平台权限检查逻辑以支持Unix和Windows系统"
+      "Parse configuration arguments passed by the user through the command line",
+      "Validate the documentation directory path (exists and is a directory)",
+      "Check whether privileged ports (<1024) have administrator privileges",
+      "Provide generation logic for service URLs and bind addresses",
+      "Encapsulate cross-platform permission check logic to support Unix and Windows systems"
     ]
   }
 ]
 ```
 
-## Memory存储统计
+## Memory Storage Statistics
 
-**总存储大小**: 217372 bytes
+**Total storage size**: 217372 bytes
 
 - **studies_research**: 41482 bytes (19.1%)
 - **preprocess**: 80239 bytes (36.9%)
 - **documentation**: 95615 bytes (44.0%)
 - **timing**: 36 bytes (0.0%)
 
-## 生成文档统计
+## Generated Documentation Statistics
 
-生成文档数量: 7 个
+Number of generated documents: 7 documents
 
-- 核心模块与组件调研报告_文档数据域
-- 核心模块与组件调研报告_用户交互域
-- 边界调用
-- 核心模块与组件调研报告_系统支撑域
-- 架构说明
-- 项目概述
-- 核心流程
+- Core Module and Component Research Report - Document Data Domain
+- Core Module and Component Research Report - User Interaction Domain
+- Boundary Calls
+- Core Module and Component Research Report - System Support Domain
+- Architecture Overview
+- Project Overview
+- Core Workflow
