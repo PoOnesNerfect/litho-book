@@ -20,31 +20,34 @@ async fn main() -> anyhow::Result<()> {
 
     // Validate arguments
     if let Err(e) = args.validate() {
-        error!("参数验证失败: {}", e);
+        error!("Argument validation failed: {}", e);
         std::process::exit(1);
     }
 
-    info!("正在扫描文档目录: {}", args.docs_dir.display());
+    info!(
+        "Scanning documentation directory: {}",
+        args.docs_dir.display()
+    );
 
     // Build document tree
     let doc_tree = match filesystem::DocumentTree::new(&args.docs_dir) {
         Ok(tree) => {
             let stats = tree.get_stats();
             info!(
-                "成功扫描文档目录: {} 个文件, {} 个目录, 总大小: {}",
+                "Successfully scanned documentation directory: {} files, {} directories, total size: {}",
                 stats.total_files,
                 stats.total_dirs,
                 format_bytes(stats.total_size)
             );
 
             if stats.total_files == 0 {
-                warn!("未找到任何 Markdown 文件，请检查目录是否包含 .md 文件");
+                warn!("No Markdown files found. Check whether the directory contains .md files");
             }
 
             tree
         }
         Err(e) => {
-            error!("扫描文档目录失败: {}", e);
+            error!("Failed to scan documentation directory: {}", e);
             std::process::exit(1);
         }
     };
@@ -57,34 +60,34 @@ async fn main() -> anyhow::Result<()> {
     let bind_address = args.bind_address();
     let listener = match tokio::net::TcpListener::bind(&bind_address).await {
         Ok(listener) => {
-            info!("服务器绑定成功: {}", bind_address);
+            info!("Server bound successfully: {}", bind_address);
             listener
         }
         Err(e) => {
-            error!("无法绑定到地址 {}: {}", bind_address, e);
+            error!("Failed to bind to address {}: {}", bind_address, e);
             std::process::exit(1);
         }
     };
 
     let server_url = args.server_url();
 
-    info!("🚀 Litho Book 服务器启动成功!");
-    info!("📖 访问地址: {}", server_url);
-    info!("📁 文档目录: {}", args.docs_dir.display());
-    info!("⏹️  按 Ctrl+C 停止服务器");
+    info!("🚀 Litho Book server started successfully!");
+    info!("📖 URL: {}", server_url);
+    info!("📁 Documentation directory: {}", args.docs_dir.display());
+    info!("⏹️  Press Ctrl+C to stop the server");
 
     // Auto-open browser
     if args.open {
-        info!("正在打开浏览器...");
+        info!("Opening browser...");
         if let Err(e) = open_browser(&server_url) {
-            warn!("无法自动打开浏览器: {}", e);
-            info!("请手动访问: {}", server_url);
+            warn!("Failed to open browser automatically: {}", e);
+            info!("Open this URL manually: {}", server_url);
         }
     }
 
     // Start server
     if let Err(e) = axum::serve(listener, app).await {
-        error!("服务器运行错误: {}", e);
+        error!("Server runtime error: {}", e);
         std::process::exit(1);
     }
 

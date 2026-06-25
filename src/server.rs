@@ -58,12 +58,12 @@ pub struct StatsResponse {
     pub formatted_size: String,
 }
 
-// AI助手相关的数据结构
+// AI-assistant-related data structures.
 #[derive(Deserialize)]
 pub struct ChatRequest {
     pub message: String,
-    pub context: Option<String>,             // 当前文档内容作为上下文
-    pub history: Option<Vec<OpenAIMessage>>, // 历史会话消息
+    pub context: Option<String>, // Current document content as context.
+    pub history: Option<Vec<OpenAIMessage>>, // Conversation history messages.
 }
 
 #[derive(Serialize, Deserialize)]
@@ -80,7 +80,7 @@ pub struct OpenAIRequest {
     pub max_tokens: i32,
     pub stream: bool,
 }
-// 流式响应相关的数据结构
+// Streaming-response-related data structures.
 #[derive(Deserialize)]
 pub struct OpenAIStreamChoice {
     pub delta: OpenAIStreamDelta,
@@ -248,12 +248,12 @@ async fn health_handler() -> Json<serde_json::Value> {
     }))
 }
 
-/// AI助手流式聊天处理函数
+/// AI assistant streaming chat handler.
 async fn chat_stream_handler(
     State(state): State<AppState>,
     Json(request): Json<ChatRequest>,
 ) -> Sse<impl Stream<Item = Result<Event, Infallible>>> {
-    debug!("AI助手收到消息: {}", request.message);
+    debug!("AI assistant received message: {}", request.message);
 
     let stream = async_stream::stream! {
         match call_openai_stream_api(
@@ -265,7 +265,7 @@ async fn chat_stream_handler(
             Ok(mut response_stream) => {
                 let mut full_response = String::new();
 
-                // 发送开始事件
+                // Send start event.
                 yield Ok(Event::default()
                     .event("start")
                     .data(serde_json::to_string(&StreamEvent {
@@ -275,13 +275,13 @@ async fn chat_stream_handler(
                         finished: false,
                     }).unwrap_or_default()));
 
-                // 处理流式响应
+                // Handle streaming response.
                 while let Some(chunk) = response_stream.recv().await {
                     match chunk {
                         Ok(content) => {
                             full_response.push_str(&content);
 
-                            // 发送内容块
+                            // Send content chunk.
                             yield Ok(Event::default()
                                 .event("content")
                                 .data(serde_json::to_string(&StreamEvent {
@@ -292,12 +292,12 @@ async fn chat_stream_handler(
                                 }).unwrap_or_default()));
                         }
                         Err(e) => {
-                            error!("流式响应错误: {}", e);
+                            error!("Streaming response error: {}", e);
                             yield Ok(Event::default()
                                 .event("error")
                                 .data(serde_json::to_string(&StreamEvent {
                                     event_type: "error".to_string(),
-                                    content: Some("抱歉，我现在无法回答您的问题。请稍后再试。".to_string()),
+                                    content: Some("Sorry, I cannot answer your question right now. Please try again later.".to_string()),
                                     suggestions: None,
                                     finished: true,
                                 }).unwrap_or_default()));
@@ -306,10 +306,10 @@ async fn chat_stream_handler(
                     }
                 }
 
-                // 生成推荐问题
+                // Generate suggested questions.
                 let suggestions = generate_suggestions(&full_response, request.context.as_deref());
 
-                // 发送完成事件
+                // Send completion event.
                 yield Ok(Event::default()
                     .event("finish")
                     .data(serde_json::to_string(&StreamEvent {
@@ -320,12 +320,12 @@ async fn chat_stream_handler(
                     }).unwrap_or_default()));
             }
             Err(e) => {
-                error!("调用AI API失败: {}", e);
+                error!("Failed to call AI API: {}", e);
                 yield Ok(Event::default()
                     .event("error")
                     .data(serde_json::to_string(&StreamEvent {
                         event_type: "error".to_string(),
-                        content: Some("抱歉，我现在无法回答您的问题。请稍后再试。".to_string()),
+                        content: Some("Sorry, I cannot answer your question right now. Please try again later.".to_string()),
                         suggestions: None,
                         finished: true,
                     }).unwrap_or_default()));
@@ -340,7 +340,7 @@ async fn chat_stream_handler(
     )
 }
 
-/// 调用OpenAI兼容的流式API
+/// Call the OpenAI-compatible streaming API.
 async fn call_openai_stream_api(
     message: &str,
     context: Option<&str>,
@@ -352,26 +352,26 @@ async fn call_openai_stream_api(
 > {
     let client = reqwest::Client::new();
 
-    // 构建系统提示词
-    let mut system_prompt = "你是一个专业的文档助手，专门帮助用户理解和分析技术文档。请用中文回答问题，回答要准确、简洁、有帮助。".to_string();
+    // Build the system prompt.
+    let mut system_prompt = "You are a professional documentation assistant that helps users understand and analyze technical documentation. Answer accurately, concisely, and helpfully.".to_string();
 
-    // 添加上下文（如果有的话）
+    // Add context when provided.
     if let Some(ctx) = context {
         if !ctx.is_empty() {
-            system_prompt.push_str(&format!("\n\n用户提供的上下文信息：\n{}", ctx));
+            system_prompt.push_str(&format!("\n\nUser-provided context:\n{}", ctx));
         }
     }
 
-    // 构建消息列表
+    // Build message list.
     let mut messages = vec![OpenAIMessage {
         role: "system".to_string(),
         content: system_prompt,
     }];
 
-    // 添加历史消息（如果有的话）
+    // Add history messages when provided.
     if let Some(hist) = history {
-        // 限制历史消息数量，避免请求过大
-        let max_history = 10; // 最多保留10轮对话
+        // Limit history to avoid oversized requests.
+        let max_history = 10; // Keep at most 10 conversation turns.
         let start_index = if hist.len() > max_history {
             hist.len() - max_history
         } else {
@@ -380,7 +380,7 @@ async fn call_openai_stream_api(
         messages.extend(hist.into_iter().skip(start_index));
     }
 
-    // 添加当前用户消息
+    // Add current user message.
     messages.push(OpenAIMessage {
         role: "user".to_string(),
         content: message.to_string(),
@@ -391,7 +391,7 @@ async fn call_openai_stream_api(
         messages,
         temperature: 0.7,
         max_tokens: 16384,
-        stream: true, // 启用流式响应
+        stream: true, // Enable streaming response.
     };
 
     let github_token = std::env::var("GITHUB_TOKEN")
@@ -413,13 +413,13 @@ async fn call_openai_stream_api(
     if !response.status().is_success() {
         let status = response.status();
         let text = response.text().await.unwrap_or_default();
-        return Err(format!("API请求失败: {} - {}", status, text).into());
+        return Err(format!("API request failed: {} - {}", status, text).into());
     }
 
-    // 创建通道来传递流式数据
+    // Create a channel for streaming data.
     let (tx, rx) = tokio::sync::mpsc::channel(100);
 
-    // 在后台任务中处理流式响应
+    // Process the streaming response in a background task.
     tokio::spawn(async move {
         use futures::StreamExt;
 
@@ -439,11 +439,11 @@ async fn call_openai_stream_api(
                     for line in &lines {
                         if let Some(data) = line.strip_prefix("data: ") {
                             if data == "[DONE]" {
-                                // 流结束
+                                // Stream ended.
                                 return;
                             }
 
-                            // 尝试解析JSON
+                            // Try to parse JSON.
                             if let Ok(stream_response) =
                                 serde_json::from_str::<OpenAIStreamResponse>(data)
                                 && let Some(choice) = stream_response.choices.first()
@@ -452,10 +452,10 @@ async fn call_openai_stream_api(
                                     && !content.is_empty()
                                     && tx.send(Ok(content.clone())).await.is_err()
                                 {
-                                    return; // 接收端已关闭
+                                    return; // Receiver has been closed.
                                 }
 
-                                // 检查是否完成
+                                // Check whether the stream is complete.
                                 if choice.finish_reason.is_some() {
                                     return;
                                 }
@@ -469,7 +469,9 @@ async fn call_openai_stream_api(
                     }
                 }
                 Err(e) => {
-                    let _ = tx.send(Err(format!("流式响应错误: {}", e).into())).await;
+                    let _ = tx
+                        .send(Err(format!("Streaming response error: {}", e).into()))
+                        .await;
                     return;
                 }
             }
@@ -479,34 +481,35 @@ async fn call_openai_stream_api(
     Ok(rx)
 }
 
-/// 生成推荐的追问问题
+/// Generate recommended follow-up questions.
 fn generate_suggestions(ai_response: &str, _context: Option<&str>) -> Vec<String> {
     let mut suggestions = Vec::new();
 
-    // 基于AI回答内容生成相关问题
-    if ai_response.contains("架构") || ai_response.contains("设计") {
-        suggestions.push("这个架构的优缺点是什么？".to_string());
-        suggestions.push("有哪些替代的设计方案？".to_string());
+    // Generate related questions from AI response content.
+    if ai_response.contains("architecture") || ai_response.contains("design") {
+        suggestions.push("What are the strengths and weaknesses of this architecture?".to_string());
+        suggestions.push("What alternative designs are available?".to_string());
     }
 
-    if ai_response.contains("性能") || ai_response.contains("耗时") {
-        suggestions.push("项目使用了哪些性能优化策略？".to_string());
-        suggestions.push("如何优化项目中的性能热点？".to_string());
+    if ai_response.contains("performance") || ai_response.contains("latency") {
+        suggestions
+            .push("What performance optimization strategies does the project use?".to_string());
+        suggestions.push("How can performance hotspots in the project be optimized?".to_string());
     }
 
-    if ai_response.contains("配置") || ai_response.contains("参数") {
-        suggestions.push("这些配置的默认值是什么？".to_string());
-        suggestions.push("如何调优这些参数？".to_string());
+    if ai_response.contains("configuration") || ai_response.contains("parameter") {
+        suggestions.push("What are the default values for these settings?".to_string());
+        suggestions.push("How can these parameters be tuned?".to_string());
     }
 
-    // 如果没有特定的建议，提供通用的
+    // Provide generic suggestions when no specific suggestion matches.
     if suggestions.is_empty() {
-        suggestions.push("能详细解释一下吗？".to_string());
-        suggestions.push("有相关的示例吗？".to_string());
-        suggestions.push("这个有什么最佳实践？".to_string());
+        suggestions.push("Can you explain this in more detail?".to_string());
+        suggestions.push("Are there related examples?".to_string());
+        suggestions.push("What best practices apply here?".to_string());
     }
 
-    // 限制建议数量
+    // Limit suggestion count.
     suggestions.truncate(3);
     suggestions
 }
