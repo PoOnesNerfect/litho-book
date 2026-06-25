@@ -2905,6 +2905,7 @@
             // Document tree data
             const treeData = {{ tree_json|safe }};
             let currentFile = null;
+            const currentFileStorageKey = 'litho-book-current-file';
             let allFiles = [];
             let originalTreeData = null;
 
@@ -3262,6 +3263,7 @@
                 if (node.is_file) {
                     iconSpan.className += ' file-icon';
                     itemDiv.className += ' file';
+                    itemDiv.dataset.path = node.path;
                     itemDiv.addEventListener('click', () => loadFile(node.path));
                 } else {
                     iconSpan.className += ' folder-icon';
@@ -3299,6 +3301,45 @@
                 }
             }
 
+            function selectedFileFromUrl() {
+                return new URLSearchParams(window.location.search).get('file');
+            }
+
+            function updateSelectedFileLocation(filePath, replace = false) {
+                const url = new URL(window.location.href);
+                if (url.searchParams.get('file') === filePath) {
+                    return;
+                }
+
+                url.searchParams.set('file', filePath);
+                const state = { file: filePath };
+                if (replace) {
+                    window.history.replaceState(state, '', url);
+                } else {
+                    window.history.pushState(state, '', url);
+                }
+            }
+
+            function revealActiveTreeItem(activeItem) {
+                if (!activeItem) return;
+
+                let parent = activeItem.closest('.tree-children');
+                while (parent) {
+                    parent.classList.remove('collapsed');
+
+                    const parentNode = parent.parentElement;
+                    const parentItem = parentNode?.firstElementChild;
+                    const parentIcon = parentItem?.querySelector('.tree-icon.folder-icon');
+                    if (parentIcon) {
+                        parentIcon.classList.add('open');
+                    }
+
+                    parent = parentNode?.closest('.tree-children');
+                }
+
+                activeItem.scrollIntoView({ block: 'nearest' });
+            }
+
             // Toggle sidebar
             function toggleSidebar() {
                 const sidebar = document.getElementById('sidebar');
@@ -3329,8 +3370,11 @@
             }
 
             // Load file content
-            async function loadFile(filePath) {
+            async function loadFile(filePath, options = {}) {
                 if (currentFile === filePath) return;
+                const updateHistory = options.updateHistory !== false;
+                const replaceHistory = options.replaceHistory === true;
+                const throwOnError = options.throwOnError === true;
 
                 const contentContainer = document.getElementById('content-container');
                 contentContainer.innerHTML = `
@@ -3354,15 +3398,17 @@
                     });
 
                     const activeItem = Array.from(document.querySelectorAll('.tree-item'))
-                        .find(item => {
-                            const span = item.querySelector('span:last-child');
-                            return span && span.textContent.trim() === filePath.split('/').pop();
-                        });
+                        .find(item => item.dataset.path === filePath);
                     if (activeItem) {
                         activeItem.classList.add('active');
+                        revealActiveTreeItem(activeItem);
                     }
 
                     currentFile = filePath;
+                    localStorage.setItem(currentFileStorageKey, filePath);
+                    if (updateHistory) {
+                        updateSelectedFileLocation(filePath, replaceHistory);
+                    }
                     updateBreadcrumb(filePath);
 
                     // Render Markdown content
@@ -3501,13 +3547,17 @@
                     updateContextOnFileChange(filePath);
 
                 } catch (error) {
-                    contentContainer.innerHTML = `
-                        <div class="error">
-                            <h3>📋 Load failed</h3>
-                            <p><strong>File:</strong> ${filePath}</p>
-                            <p><strong>Error:</strong> ${error.message}</p>
-                        </div>
-                    `;
+                    if (throwOnError) {
+                        throw error;
+                    } else {
+                        contentContainer.innerHTML = `
+                            <div class="error">
+                                <h3>📋 Load failed</h3>
+                                <p><strong>File:</strong> ${filePath}</p>
+                                <p><strong>Error:</strong> ${error.message}</p>
+                            </div>
+                        `;
+                    }
                 }
             }
 
@@ -3697,8 +3747,38 @@
                 initializeDefaultDocument();
             });
 
+            window.addEventListener('popstate', () => {
+                const requestedFile = selectedFileFromUrl();
+                if (requestedFile) {
+                    loadFile(requestedFile, { updateHistory: false });
+                } else {
+                    initializeDefaultDocument();
+                }
+            });
+
             // Initialize default document loading (with fallback strategy)
             async function initializeDefaultDocument() {
+                const requestedFile = selectedFileFromUrl();
+                if (requestedFile) {
+                    try {
+                        await loadFile(requestedFile, { updateHistory: false, throwOnError: true });
+                        return;
+                    } catch (error) {
+                        console.warn(`Failed to restore document from URL: ${requestedFile}`, error);
+                    }
+                }
+
+                const storedFile = localStorage.getItem(currentFileStorageKey);
+                if (storedFile) {
+                    try {
+                        await loadFile(storedFile, { replaceHistory: true, throwOnError: true });
+                        return;
+                    } catch (error) {
+                        console.warn(`Failed to restore previously selected document: ${storedFile}`, error);
+                        localStorage.removeItem(currentFileStorageKey);
+                    }
+                }
+
                 const defaultFiles = ['1-project-overview.md', '1.Overview.md', 'README.md', 'Overview.md'];
 
                 for (const fileName of defaultFiles) {
@@ -3706,7 +3786,7 @@
                         const response = await fetch(`/api/file?file=${encodeURIComponent(fileName)}`);
                         if (response.ok) {
                             // Found available file; loading it
-                            await loadFile(fileName);
+                            await loadFile(fileName, { replaceHistory: true });
                             console.info(`Successfully loaded default document: ${fileName}`);
                             return;
                         }
