@@ -59,6 +59,9 @@
                     "Helvetica Neue", Arial, sans-serif;
                 --font-size-base: 16px;
                 --font-size-scale: 1;
+
+                /* Layout settings */
+                --content-width: 100%;
             }
 
             /* Dark theme */
@@ -103,6 +106,116 @@
                 --table-stripe: oklch(0.95 0.008 84.57);
                 --blockquote-bg: oklch(0.95 0.008 84.57);
                 --shadow: oklch(0.2 0.01 84.57 / 0.1);
+            }
+
+            /* Nord theme */
+            [data-theme="nord"] {
+                --bg-primary: #2e3440;
+                --bg-secondary: #3b4252;
+                --bg-tertiary: #434c5e;
+                --text-primary: #eceff4;
+                --text-secondary: #d8dee9;
+                --text-tertiary: #e5e9f0;
+                --border-color: #434c5e;
+                --accent-color: #88c0d0;
+                --accent-hover: #8fbcbb;
+                --header-bg: #242933;
+                --header-text: #eceff4;
+                --sidebar-bg: #3b4252;
+                --code-bg: #3b4252;
+                --code-text: #b48ead;
+                --pre-bg: #3b4252;
+                --table-stripe: #3b4252;
+                --blockquote-bg: #3b4252;
+                --shadow: rgba(0, 0, 0, 0.3);
+            }
+
+            /* Solarized Light theme */
+            [data-theme="solarized-light"] {
+                --bg-primary: #fdf6e3;
+                --bg-secondary: #eee8d5;
+                --bg-tertiary: #e6ddc4;
+                --text-primary: #073642;
+                --text-secondary: #586e75;
+                --text-tertiary: #657b83;
+                --border-color: #e6ddc4;
+                --accent-color: #268bd2;
+                --accent-hover: #1f6fa8;
+                --header-bg: #073642;
+                --header-text: #fdf6e3;
+                --sidebar-bg: #eee8d5;
+                --code-bg: #eee8d5;
+                --code-text: #d33682;
+                --pre-bg: #eee8d5;
+                --table-stripe: #eee8d5;
+                --blockquote-bg: #eee8d5;
+                --shadow: rgba(101, 123, 131, 0.15);
+            }
+
+            /* Solarized Dark theme */
+            [data-theme="solarized-dark"] {
+                --bg-primary: #002b36;
+                --bg-secondary: #073642;
+                --bg-tertiary: #0a4b5a;
+                --text-primary: #eee8d5;
+                --text-secondary: #93a1a1;
+                --text-tertiary: #b5c3c3;
+                --border-color: #0a4b5a;
+                --accent-color: #268bd2;
+                --accent-hover: #2aa198;
+                --header-bg: #001f27;
+                --header-text: #eee8d5;
+                --sidebar-bg: #073642;
+                --code-bg: #073642;
+                --code-text: #d33682;
+                --pre-bg: #073642;
+                --table-stripe: #073642;
+                --blockquote-bg: #073642;
+                --shadow: rgba(0, 0, 0, 0.3);
+            }
+
+            /* Gruvbox Dark theme */
+            [data-theme="gruvbox"] {
+                --bg-primary: #282828;
+                --bg-secondary: #3c3836;
+                --bg-tertiary: #504945;
+                --text-primary: #ebdbb2;
+                --text-secondary: #bdae93;
+                --text-tertiary: #d5c4a1;
+                --border-color: #504945;
+                --accent-color: #fabd2f;
+                --accent-hover: #d79921;
+                --header-bg: #1d2021;
+                --header-text: #ebdbb2;
+                --sidebar-bg: #3c3836;
+                --code-bg: #3c3836;
+                --code-text: #d3869b;
+                --pre-bg: #3c3836;
+                --table-stripe: #3c3836;
+                --blockquote-bg: #3c3836;
+                --shadow: rgba(0, 0, 0, 0.3);
+            }
+
+            /* Rosé Pine theme */
+            [data-theme="rose-pine"] {
+                --bg-primary: #191724;
+                --bg-secondary: #1f1d2e;
+                --bg-tertiary: #26233a;
+                --text-primary: #e0def4;
+                --text-secondary: #908caa;
+                --text-tertiary: #c4c1e0;
+                --border-color: #26233a;
+                --accent-color: #ebbcba;
+                --accent-hover: #eb6f92;
+                --header-bg: #12111e;
+                --header-text: #e0def4;
+                --sidebar-bg: #1f1d2e;
+                --code-bg: #26233a;
+                --code-text: #f6c177;
+                --pre-bg: #26233a;
+                --table-stripe: #1f1d2e;
+                --blockquote-bg: #1f1d2e;
+                --shadow: rgba(0, 0, 0, 0.35);
             }
 
             * {
@@ -365,6 +478,42 @@
                 border-color: oklch(0.85 0.01 84.57);
             }
 
+            .theme-option[data-theme="nord"] .theme-preview {
+                background: linear-gradient(135deg, #2e3440 0%, #434c5e 100%);
+                color: #88c0d0;
+                border-color: #434c5e;
+            }
+
+            .theme-option[data-theme="solarized-light"] .theme-preview {
+                background: linear-gradient(135deg, #fdf6e3 0%, #eee8d5 100%);
+                color: #268bd2;
+                border-color: #e6ddc4;
+            }
+
+            .theme-option[data-theme="solarized-dark"] .theme-preview {
+                background: linear-gradient(135deg, #002b36 0%, #073642 100%);
+                color: #2aa198;
+                border-color: #0a4b5a;
+            }
+
+            .theme-option[data-theme="gruvbox"] .theme-preview {
+                background: linear-gradient(135deg, #282828 0%, #3c3836 100%);
+                color: #fabd2f;
+                border-color: #504945;
+            }
+
+            .theme-option[data-theme="rose-pine"] .theme-preview {
+                background: linear-gradient(135deg, #191724 0%, #26233a 100%);
+                color: #ebbcba;
+                border-color: #26233a;
+            }
+
+            /* Gruvbox's accent is a light yellow; keep the active swatch readable. */
+            [data-theme="gruvbox"] .theme-option.active,
+            [data-theme="gruvbox"] .theme-option.active .theme-name {
+                color: #282828;
+            }
+
             .theme-name {
                 font-weight: 500;
                 color: var(--text-primary);
@@ -419,6 +568,55 @@
                 color: var(--text-secondary);
                 min-width: 60px;
                 text-align: center;
+            }
+
+            /* Content width slider */
+            .width-controls {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .width-slider {
+                flex: 1;
+                accent-color: var(--accent-color);
+                cursor: pointer;
+            }
+
+            .width-display {
+                font-size: calc(0.9rem * var(--font-size-scale));
+                color: var(--text-secondary);
+                min-width: 48px;
+                text-align: right;
+            }
+
+            /* TOC mode selector */
+            .toc-mode-options {
+                display: flex;
+                gap: 0.5rem;
+            }
+
+            .toc-mode-btn {
+                flex: 1;
+                padding: 0.5rem 0.25rem;
+                border: 2px solid var(--border-color);
+                border-radius: 8px;
+                background: var(--bg-secondary);
+                color: var(--text-primary);
+                font-size: calc(0.8rem * var(--font-size-scale));
+                cursor: pointer;
+                transition: all 0.2s ease;
+            }
+
+            .toc-mode-btn:hover {
+                border-color: var(--accent-color);
+                transform: translateY(-1px);
+            }
+
+            .toc-mode-btn.active {
+                border-color: var(--accent-color);
+                background: var(--accent-color);
+                color: white;
             }
 
             .reset-btn {
@@ -779,7 +977,8 @@
 
             /* Markdown styles */
             .markdown-content {
-                max-width: none;
+                max-width: var(--content-width, 100%);
+                margin-inline: auto;
                 line-height: 1.7;
                 color: var(--text-primary);
             }
@@ -1286,6 +1485,61 @@
 
             .doc-toc.collapsed .doc-toc-content {
                 display: none;
+            }
+
+            /*
+             * TOC modes (set via data-toc-mode on <html>):
+             *   floating (default) - fixed, collapsible panel (rules above)
+             *   sidebar            - docked as a right-hand column of .container
+             *   hidden             - not rendered
+             * The .doc-toc element is a child of .container so that in sidebar
+             * mode it participates in the flex row; floating mode uses fixed
+             * positioning, which ignores the parent's flow.
+             */
+            [data-toc-mode="sidebar"] .doc-toc {
+                position: relative;
+                right: auto;
+                top: auto;
+                transform: none;
+                max-width: 300px;
+                width: 300px;
+                max-height: none;
+                flex-shrink: 0;
+                border: none;
+                border-left: 1px solid var(--border-color);
+                border-radius: 0;
+                box-shadow: none;
+                backdrop-filter: none;
+                background: var(--sidebar-bg);
+                display: flex;
+                flex-direction: column;
+            }
+
+            [data-toc-mode="sidebar"] .doc-toc-header {
+                border-radius: 0;
+                flex-shrink: 0;
+            }
+
+            /* Docked panels stay expanded, so hide the collapse control. */
+            [data-toc-mode="sidebar"] .doc-toc-toggle {
+                display: none;
+            }
+
+            [data-toc-mode="sidebar"] .doc-toc.collapsed {
+                transform: none;
+            }
+
+            [data-toc-mode="sidebar"] .doc-toc.collapsed .doc-toc-content {
+                display: block;
+            }
+
+            [data-toc-mode="sidebar"] .doc-toc-content {
+                max-height: none;
+                flex: 1;
+            }
+
+            [data-toc-mode="hidden"] .doc-toc {
+                display: none !important;
             }
 
             .toc-item {
@@ -1933,6 +2187,26 @@
                                 <div class="theme-preview">🎨</div>
                                 <div class="theme-name">Morandi</div>
                             </div>
+                            <div class="theme-option" data-theme="nord">
+                                <div class="theme-preview">❄️</div>
+                                <div class="theme-name">Nord</div>
+                            </div>
+                            <div class="theme-option" data-theme="solarized-light">
+                                <div class="theme-preview">🌤️</div>
+                                <div class="theme-name">Solarized Light</div>
+                            </div>
+                            <div class="theme-option" data-theme="solarized-dark">
+                                <div class="theme-preview">🌌</div>
+                                <div class="theme-name">Solarized Dark</div>
+                            </div>
+                            <div class="theme-option" data-theme="gruvbox">
+                                <div class="theme-preview">🟫</div>
+                                <div class="theme-name">Gruvbox</div>
+                            </div>
+                            <div class="theme-option" data-theme="rose-pine">
+                                <div class="theme-preview">🌹</div>
+                                <div class="theme-name">Rosé Pine</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2008,6 +2282,58 @@
                                 onclick="adjustFontSize(0.05)"
                             >
                                 +
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-title">📐 Content width</div>
+                    <div class="settings-group">
+                        <label class="settings-label">Reading column width</label>
+                        <div class="width-controls">
+                            <input
+                                type="range"
+                                class="width-slider"
+                                id="contentWidthSlider"
+                                min="40"
+                                max="100"
+                                step="5"
+                                value="100"
+                                oninput="setContentWidth(this.value)"
+                            />
+                            <div class="width-display" id="contentWidthDisplay">
+                                100%
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-title">📑 Table of contents</div>
+                    <div class="settings-group">
+                        <label class="settings-label">On-page heading navigation</label>
+                        <div class="toc-mode-options">
+                            <button
+                                class="toc-mode-btn"
+                                data-toc-mode="floating"
+                                onclick="setTocMode('floating')"
+                            >
+                                Floating
+                            </button>
+                            <button
+                                class="toc-mode-btn"
+                                data-toc-mode="sidebar"
+                                onclick="setTocMode('sidebar')"
+                            >
+                                Right sidebar
+                            </button>
+                            <button
+                                class="toc-mode-btn"
+                                data-toc-mode="hidden"
+                                onclick="setTocMode('hidden')"
+                            >
+                                Hidden
                             </button>
                         </div>
                     </div>
@@ -2089,10 +2415,9 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Document contents -->
-        <div class="doc-toc collapsed" id="docToc">
+            <!-- Document contents -->
+            <div class="doc-toc collapsed" id="docToc">
             <div class="doc-toc-header">
                 <h3 class="doc-toc-title">
                     <svg
@@ -2131,6 +2456,7 @@
             </div>
             <div class="doc-toc-content" id="tocContent">
                 <!-- TOC items are generated dynamically with JavaScript -->
+            </div>
             </div>
         </div>
 
@@ -2233,6 +2559,8 @@
                 theme: 'light',
                 fontFamily: 'geist',
                 fontSizeScale: 1,
+                contentWidth: 100,
+                tocMode: 'floating',
 
                 // Font mapping - optimized multilingual font support
                 fontFamilies: {
@@ -2260,6 +2588,8 @@
                         this.theme = settings.theme || 'light';
                         this.fontFamily = settings.fontFamily || 'geist';
                         this.fontSizeScale = settings.fontSizeScale || 1;
+                        this.contentWidth = settings.contentWidth || 100;
+                        this.tocMode = settings.tocMode || 'floating';
                     }
                     this.apply();
                 },
@@ -2269,7 +2599,9 @@
                     localStorage.setItem('litho-book-settings', JSON.stringify({
                         theme: this.theme,
                         fontFamily: this.fontFamily,
-                        fontSizeScale: this.fontSizeScale
+                        fontSizeScale: this.fontSizeScale,
+                        contentWidth: this.contentWidth,
+                        tocMode: this.tocMode
                     }));
                 },
 
@@ -2287,6 +2619,15 @@
 
                     // Apply font size
                     document.documentElement.style.setProperty('--font-size-scale', this.fontSizeScale);
+
+                    // Apply content width (percentage of the reading column)
+                    document.documentElement.style.setProperty('--content-width', this.contentWidth + '%');
+
+                    // Apply table-of-contents mode (floating / sidebar / hidden)
+                    document.documentElement.setAttribute('data-toc-mode', this.tocMode);
+                    if (typeof TableOfContents !== 'undefined') {
+                        TableOfContents.applyMode();
+                    }
 
                     // Reinitialize and render Mermaid diagrams for the new theme
                     if (typeof mermaid !== 'undefined' && typeof initializeMermaid === 'function') {
@@ -2326,6 +2667,21 @@
                     if (fontSizeDisplay) {
                         fontSizeDisplay.textContent = Math.round(this.fontSizeScale * 100) + '%';
                     }
+
+                    // Update content width slider + display
+                    const widthSlider = document.getElementById('contentWidthSlider');
+                    if (widthSlider) {
+                        widthSlider.value = this.contentWidth;
+                    }
+                    const widthDisplay = document.getElementById('contentWidthDisplay');
+                    if (widthDisplay) {
+                        widthDisplay.textContent = this.contentWidth + '%';
+                    }
+
+                    // Update TOC mode buttons
+                    document.querySelectorAll('.toc-mode-btn').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.tocMode === this.tocMode);
+                    });
 
                     // Update font preview
                     const fontPreview = document.getElementById('fontPreview');
@@ -2369,11 +2725,27 @@
                     this.save();
                 },
 
+                // Set content width (percentage of the reading column)
+                setContentWidth(percent) {
+                    this.contentWidth = Math.max(40, Math.min(100, parseInt(percent, 10) || 100));
+                    this.apply();
+                    this.save();
+                },
+
+                // Set table-of-contents mode (floating / sidebar / hidden)
+                setTocMode(mode) {
+                    this.tocMode = mode;
+                    this.apply();
+                    this.save();
+                },
+
                 // Reset settings
                 reset() {
                     this.theme = 'light';
                     this.fontFamily = 'geist';
                     this.fontSizeScale = 1;
+                    this.contentWidth = 100;
+                    this.tocMode = 'floating';
                     this.apply();
                     this.save();
                 },
@@ -2429,6 +2801,14 @@
 
             function adjustFontSize(delta) {
                 Settings.adjustFontSize(delta);
+            }
+
+            function setContentWidth(percent) {
+                Settings.setContentWidth(percent);
+            }
+
+            function setTocMode(mode) {
+                Settings.setTocMode(mode);
             }
 
             function resetSettings() {
@@ -2611,10 +2991,29 @@
                     });
                 },
 
-                // Show table of contents
+                // Show table of contents (respects the configured TOC mode)
                 show() {
                     const toc = document.getElementById('docToc');
-                    toc.style.display = 'block';
+                    toc.style.display =
+                        (typeof Settings !== 'undefined' && Settings.tocMode === 'hidden')
+                            ? 'none'
+                            : '';
+                },
+
+                // Apply the current TOC mode (floating / sidebar / hidden)
+                applyMode() {
+                    const toc = document.getElementById('docToc');
+                    if (!toc) return;
+                    if (Settings.tocMode === 'sidebar') {
+                        // Docked panels stay expanded, so drop the collapsed state.
+                        this.isCollapsed = false;
+                        toc.classList.remove('collapsed');
+                    }
+                    if (Settings.tocMode === 'hidden' || this.headings.length === 0) {
+                        toc.style.display = 'none';
+                    } else {
+                        toc.style.display = '';
+                    }
                 },
 
                 // Hide table of contents
