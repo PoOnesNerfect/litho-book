@@ -6436,11 +6436,14 @@
                     '@media (max-width: 820px) { .export-toc { position: static; width: auto; height: auto; border-right: none;',
                     '  border-bottom: 1px solid var(--border-color, #d0d7de); } .export-content { margin-left: 0; padding: 1.5rem 1rem 3rem; } }',
                     '.markdown-content pre { position: relative; }',
+                    // Non-scrolling wrapper so the copy button stays pinned when the
+                    // <pre> scrolls horizontally.
+                    '.code-block-wrapper { position: relative; }',
                     '.code-copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; display: inline-flex; align-items: center;',
                     '  gap: 0.3rem; padding: 0.2rem 0.5rem; font-size: 0.72rem; line-height: 1.2; color: var(--text-secondary, #57606a);',
                     '  background: var(--bg-primary, #ffffff); border: 1px solid var(--border-color, #d0d7de); border-radius: 6px;',
                     '  cursor: pointer; opacity: 0; transition: opacity 0.12s ease, color 0.12s ease; z-index: 2; }',
-                    '.markdown-content pre:hover .code-copy-btn, .code-copy-btn:focus-visible { opacity: 1; }',
+                    '.code-block-wrapper:hover .code-copy-btn, .code-copy-btn:focus-visible { opacity: 1; }',
                     '.code-copy-btn:hover { color: var(--text-primary, #24292f); }',
                     '.code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }',
                     // Inline code: keep each snippet whole (inline-block + nowrap);
@@ -6468,7 +6471,7 @@
                     'function copyText(t){if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(t).then(function(){return true;}).catch(function(){return fallback(t);});}return Promise.resolve(fallback(t));}',
                     'function flash(b,l){b.classList.add("copied");var p=l?l.textContent:null;if(l)l.textContent="Copied";setTimeout(function(){b.classList.remove("copied");if(l&&p!==null)l.textContent=p;},1200);}',
                     'function enhance(root){',
-                    'root.querySelectorAll("pre").forEach(function(pre){if(pre.dataset.copyEnhanced)return;pre.dataset.copyEnhanced="1";var code=pre.querySelector("code")||pre;var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,l);});});pre.appendChild(b);});',
+                    'root.querySelectorAll("pre").forEach(function(pre){if(pre.dataset.copyEnhanced)return;pre.dataset.copyEnhanced="1";var code=pre.querySelector("code")||pre;var parent=pre.parentNode;var wrap=pre.parentElement;if(!wrap||!wrap.classList.contains("code-block-wrapper")){wrap=document.createElement("div");wrap.className="code-block-wrapper";if(parent){parent.insertBefore(wrap,pre);wrap.appendChild(pre);}}var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,l);});});wrap.appendChild(b);});',
                     // Inline code: wrap each snippet so a CSS-hover copy button can
                     // sit at its right edge; no mouse/scroll tracking needed.
                     'root.querySelectorAll("code").forEach(function(code){if(code.closest("pre"))return;if(code.dataset.inlineCopy)return;var parent=code.parentNode;if(!parent)return;if(parent.classList&&parent.classList.contains("inline-code-wrapper"))return;code.dataset.inlineCopy="1";var wrap=document.createElement("span");wrap.className="inline-code-wrapper";parent.insertBefore(wrap,code);wrap.appendChild(code);var b=document.createElement("button");b.type="button";b.className="inline-code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,null);});});wrap.appendChild(b);});',
@@ -6511,7 +6514,12 @@
                         var code = w.querySelector('code');
                         if (code) { w.replaceWith(code); }
                     });
+                    root.querySelectorAll('.code-block-wrapper').forEach(function (w) {
+                        var pre = w.querySelector('pre');
+                        if (pre) { w.replaceWith(pre); }
+                    });
                     root.querySelectorAll('[data-copy-enhanced]').forEach(function (el) { el.removeAttribute('data-copy-enhanced'); });
+                    root.querySelectorAll('[data-inline-copy]').forEach(function (el) { el.removeAttribute('data-inline-copy'); });
                 }
 
                 function buildExportDocument() {
