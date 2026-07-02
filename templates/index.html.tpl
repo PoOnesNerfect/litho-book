@@ -4041,13 +4041,11 @@
                     .code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
                     .code-copy-btn svg { flex: 0 0 auto; }
 
-                    .inline-code-wrapper { position: relative; }
+                    /* Inline copy button: a single shared floating element,
+                       positioned by JS at the right edge of the hovered line. */
                     .inline-code-copy-btn {
-                        position: absolute;
-                        bottom: 100%;
-                        right: 0;
-                        margin-bottom: 3px;
-                        display: inline-flex;
+                        position: fixed;
+                        display: none;
                         align-items: center;
                         justify-content: center;
                         width: 1.3rem;
@@ -4058,14 +4056,10 @@
                         border: 1px solid var(--border-color, #d0d7de);
                         border-radius: 5px;
                         cursor: pointer;
-                        opacity: 0;
-                        transition: opacity 0.12s ease, color 0.12s ease;
-                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
-                        z-index: 3;
+                        transition: color 0.12s ease;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+                        z-index: 2147483000;
                     }
-                    .inline-code-wrapper:hover .inline-code-copy-btn,
-                    .inline-code-copy-btn:hover,
-                    .inline-code-copy-btn:focus-visible { opacity: 1; }
                     .inline-code-copy-btn:hover { color: var(--text-primary, #24292f); }
                     .inline-code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
                     .inline-code-copy-btn svg { width: 0.85em; height: 0.85em; }
@@ -4138,31 +4132,82 @@
                     pre.appendChild(btn);
                 });
 
-                // Inline code: small button floating above the snippet on hover.
-                container.querySelectorAll('code').forEach(code => {
-                    if (code.closest('pre')) return;
-                    if (code.dataset.copyEnhanced) return;
-                    code.dataset.copyEnhanced = '1';
+                // Inline code copy is handled by a single shared floating button
+                // (see setupInlineCopy) positioned at the right edge of the line
+                // under the cursor, so it behaves correctly when inline code wraps.
+                setupInlineCopy();
+            }
 
-                    const wrapper = document.createElement('span');
-                    wrapper.className = 'inline-code-wrapper';
-                    code.replaceWith(wrapper);
-                    wrapper.appendChild(code);
+            // One-time setup of the shared floating copy button for inline code.
+            // Uses event delegation so it also covers documents loaded later.
+            let inlineCopyInitialized = false;
+            function setupInlineCopy() {
+                if (inlineCopyInitialized) return;
+                inlineCopyInitialized = true;
+                ensureCodeCopyStyles();
 
-                    const btn = document.createElement('button');
+                let btn = null;
+                let target = null;
+                let hideTimer = null;
+
+                function isInlineCode(code) {
+                    return code && code.tagName === 'CODE'
+                        && !code.closest('pre') && !!code.closest('.markdown-content');
+                }
+                function makeButton() {
+                    btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'inline-code-copy-btn';
                     btn.setAttribute('aria-label', 'Copy code to clipboard');
                     btn.innerHTML = CODE_COPY_ICON;
-
-                    btn.addEventListener('click', async (e) => {
+                    btn.addEventListener('mouseenter', function () { clearTimeout(hideTimer); });
+                    btn.addEventListener('mouseleave', hideSoon);
+                    btn.addEventListener('click', async function (e) {
                         e.preventDefault();
                         e.stopPropagation();
-                        const ok = await copyTextToClipboard(code.textContent);
+                        if (!target) return;
+                        var ok = await copyTextToClipboard(target.textContent);
                         if (ok) flashCopied(btn, null);
                     });
-                    wrapper.appendChild(btn);
-                });
+                    document.body.appendChild(btn);
+                }
+                // Returns the client rect of the wrapped line under the cursor's Y.
+                function rectForY(code, y) {
+                    var rects = code.getClientRects();
+                    for (var i = 0; i < rects.length; i++) {
+                        if (y >= rects[i].top - 2 && y <= rects[i].bottom + 2) return rects[i];
+                    }
+                    return rects[rects.length - 1] || code.getBoundingClientRect();
+                }
+                function placeAt(rect) {
+                    btn.style.display = 'inline-flex';
+                    btn.style.left = (rect.right + 4) + 'px';
+                    btn.style.top = (rect.top + rect.height / 2) + 'px';
+                    btn.style.transform = 'translateY(-50%)';
+                }
+                function hideSoon() {
+                    hideTimer = setTimeout(function () {
+                        if (btn) btn.style.display = 'none';
+                        target = null;
+                    }, 150);
+                }
+                document.addEventListener('mouseover', function (e) {
+                    var code = e.target && e.target.closest ? e.target.closest('code') : null;
+                    if (!isInlineCode(code)) return;
+                    if (!btn) makeButton();
+                    target = code;
+                    clearTimeout(hideTimer);
+                    placeAt(rectForY(code, e.clientY));
+                }, true);
+                document.addEventListener('mousemove', function (e) {
+                    if (!target) return;
+                    var code = e.target && e.target.closest ? e.target.closest('code') : null;
+                    if (code === target) placeAt(rectForY(target, e.clientY));
+                }, true);
+                document.addEventListener('mouseout', function (e) {
+                    var code = e.target && e.target.closest ? e.target.closest('code') : null;
+                    if (code === target) hideSoon();
+                }, true);
             }
 
             // Update AI assistant context when file changes
