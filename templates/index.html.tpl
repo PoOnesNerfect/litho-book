@@ -6475,7 +6475,26 @@
                     'document.addEventListener("mousemove",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(isInline(c))show(c,e.clientY);},true);',
                     'document.addEventListener("mouseout",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(c&&c===target)hideSoon();},true);',
                     '}',
-                    'function init(){enhance(document.body);setupInlineCopy();}',
+                    // Scroll-spy: highlight the TOC entry for the section currently
+                    // at the top of the viewport. The exported page scrolls on the
+                    // window, and TOC anchors keep data-target="heading-N" matching
+                    // the heading ids, so we map items -> headings and pick the last
+                    // heading whose top has passed the activation offset.
+                    'function setupScrollSpy(){',
+                    'var items=[].slice.call(document.querySelectorAll(".export-toc .toc-item"));',
+                    'if(!items.length)return;',
+                    'var map=items.map(function(a){var id=a.getAttribute("data-target")||(a.getAttribute("href")||"").replace(/^#/,"");return{a:a,h:id?document.getElementById(id):null};}).filter(function(x){return x.h;});',
+                    'if(!map.length)return;',
+                    'var cur=null;',
+                    'function update(){var off=100,best=map[0].a;',
+                    'for(var i=0;i<map.length;i++){if(map[i].h.getBoundingClientRect().top<=off){best=map[i].a;}else{break;}}',
+                    'if(best!==cur){cur=best;items.forEach(function(a){a.classList.remove("active");});best.classList.add("active");}}',
+                    'var ticking=false;',
+                    'window.addEventListener("scroll",function(){if(!ticking){requestAnimationFrame(function(){update();ticking=false;});ticking=true;}},{passive:true});',
+                    'window.addEventListener("resize",update);',
+                    'update();',
+                    '}',
+                    'function init(){enhance(document.body);setupInlineCopy();setupScrollSpy();}',
                     'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}',
                     '})();'
                 ].join('');
