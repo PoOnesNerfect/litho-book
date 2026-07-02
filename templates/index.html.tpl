@@ -6477,15 +6477,20 @@
                     'function enhance(root){',
                     'root.querySelectorAll("pre").forEach(function(pre){if(pre.dataset.copyEnhanced)return;pre.dataset.copyEnhanced="1";var code=pre.querySelector("code")||pre;var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,l);});});pre.appendChild(b);});',
                     '}',
-                    'function setupInlineCopy(){var btn=null,target=null,hideTimer=null;',
+                    'function setupInlineCopy(){var btn=null,target=null,hideTimer=null,lastY=0;',
                     'function isInline(c){return c&&c.tagName==="CODE"&&!c.closest("pre");}',
                     'function make(){btn=document.createElement("button");btn.type="button";btn.className="inline-code-copy-btn";btn.setAttribute("aria-label","Copy code");btn.innerHTML=ICON;btn.style.position="fixed";btn.addEventListener("mouseenter",function(){clearTimeout(hideTimer);});btn.addEventListener("mouseleave",hideSoon);btn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(target)copyText(target.textContent).then(function(ok){if(ok)flash(btn,null);});});document.body.appendChild(btn);}',
                     'function rectAt(code,y){var rs=code.getClientRects();for(var i=0;i<rs.length;i++){if(y>=rs[i].top-2&&y<=rs[i].bottom+2)return rs[i];}return rs[rs.length-1]||code.getBoundingClientRect();}',
                     'function place(r){btn.style.display="inline-flex";btn.style.left=(r.right+4)+"px";btn.style.top=(r.top+r.height/2)+"px";btn.style.transform="translateY(-50%)";}',
-                    'function hideSoon(){hideTimer=setTimeout(function(){if(btn)btn.style.display="none";target=null;},1000);}',
-                    'function show(c,y){if(!btn)make();target=c;clearTimeout(hideTimer);place(rectAt(c,y));}',
+                    'function hideNow(){if(btn)btn.style.display="none";target=null;}',
+                    'function hideSoon(){hideTimer=setTimeout(hideNow,500);}',
+                    'function show(c,y){if(!btn)make();target=c;lastY=y;clearTimeout(hideTimer);place(rectAt(c,y));}',
                     'document.addEventListener("mousemove",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(isInline(c))show(c,e.clientY);},true);',
                     'document.addEventListener("mouseout",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(c&&c===target)hideSoon();},true);',
+                    // While the button lingers, keep it pinned to the hovered line
+                    // as the page scrolls (fixed-position would otherwise freeze it);
+                    // drop it once the code scrolls out of view.
+                    'window.addEventListener("scroll",function(){if(!btn||!target||btn.style.display==="none")return;var b=target.getBoundingClientRect();if(b.bottom<0||b.top>window.innerHeight){hideNow();}else{place(rectAt(target,lastY));}},true);',
                     '}',
                     // Scroll-spy: highlight the TOC entry for the section currently
                     // at the top of the viewport. The exported page scrolls on the
