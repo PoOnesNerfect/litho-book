@@ -4189,24 +4189,24 @@
                     hideTimer = setTimeout(function () {
                         if (btn) btn.style.display = 'none';
                         target = null;
-                    }, 150);
+                    }, 1000);
                 }
-                document.addEventListener('mouseover', function (e) {
-                    var code = e.target && e.target.closest ? e.target.closest('code') : null;
-                    if (!isInlineCode(code)) return;
+                function show(code, y) {
                     if (!btn) makeButton();
                     target = code;
                     clearTimeout(hideTimer);
-                    placeAt(rectForY(code, e.clientY));
-                }, true);
+                    placeAt(rectForY(code, y));
+                }
+                // Driving show/reposition from mousemove (not just mouseover)
+                // keeps the button visible while the cursor is anywhere over the
+                // snippet -- moving to the center no longer hides it.
                 document.addEventListener('mousemove', function (e) {
-                    if (!target) return;
                     var code = e.target && e.target.closest ? e.target.closest('code') : null;
-                    if (code === target) placeAt(rectForY(target, e.clientY));
+                    if (isInlineCode(code)) show(code, e.clientY);
                 }, true);
                 document.addEventListener('mouseout', function (e) {
                     var code = e.target && e.target.closest ? e.target.closest('code') : null;
-                    if (code === target) hideSoon();
+                    if (code && code === target) hideSoon();
                 }, true);
             }
 
