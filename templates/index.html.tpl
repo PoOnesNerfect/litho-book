@@ -831,6 +831,7 @@
             .content {
                 flex: 1;
                 overflow-y: auto;
+                overflow-x: hidden;
                 padding: 0;
                 background: var(--bg-primary);
                 position: relative;
@@ -1016,7 +1017,7 @@
 
             .markdown-content p {
                 margin: 1rem 0;
-                text-align: justify;
+                text-align: left;
                 /* Text layout optimization */
                 line-height: 1.8;
                 word-break: break-word;
