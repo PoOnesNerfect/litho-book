@@ -3750,6 +3750,7 @@
                 let btn = null;
                 let target = null;
                 let hideTimer = null;
+                let lastY = 0;
 
                 function isInlineCode(code) {
                     return code && code.tagName === 'CODE'
@@ -3786,15 +3787,17 @@
                     btn.style.top = (rect.top + rect.height / 2) + 'px';
                     btn.style.transform = 'translateY(-50%)';
                 }
+                function hideNow() {
+                    if (btn) btn.style.display = 'none';
+                    target = null;
+                }
                 function hideSoon() {
-                    hideTimer = setTimeout(function () {
-                        if (btn) btn.style.display = 'none';
-                        target = null;
-                    }, 1000);
+                    hideTimer = setTimeout(hideNow, 500);
                 }
                 function show(code, y) {
                     if (!btn) makeButton();
                     target = code;
+                    lastY = y;
                     clearTimeout(hideTimer);
                     placeAt(rectForY(code, y));
                 }
@@ -3808,6 +3811,15 @@
                 document.addEventListener('mouseout', function (e) {
                     var code = e.target && e.target.closest ? e.target.closest('code') : null;
                     if (code && code === target) hideSoon();
+                }, true);
+                // While the button lingers, keep it pinned to the hovered line as
+                // the page scrolls (fixed-position would otherwise freeze it in the
+                // viewport); drop it once the code scrolls out of view.
+                document.addEventListener('scroll', function () {
+                    if (!btn || !target || btn.style.display === 'none') return;
+                    var b = target.getBoundingClientRect();
+                    if (b.bottom < 0 || b.top > window.innerHeight) { hideNow(); }
+                    else { placeAt(rectForY(target, lastY)); }
                 }, true);
             }
 
