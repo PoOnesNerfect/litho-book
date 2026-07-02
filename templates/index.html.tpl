@@ -1096,6 +1096,26 @@
                 white-space: normal;
             }
 
+            /* In a cell the code wraps, so the wrapper fills the column width and
+               an absolute right-edge button would sit far from the (short) last
+               line and get clipped at the cell border. Let the button flow in-line
+               right after the code instead, revealed on hover. */
+            .markdown-content th .inline-code-copy-btn,
+            .markdown-content td .inline-code-copy-btn {
+                position: static;
+                transform: none;
+                margin-left: 4px;
+                vertical-align: middle;
+                opacity: 1;
+                display: none;
+            }
+            .markdown-content th .inline-code-wrapper:hover .inline-code-copy-btn,
+            .markdown-content td .inline-code-wrapper:hover .inline-code-copy-btn,
+            .markdown-content th .inline-code-copy-btn:focus-visible,
+            .markdown-content td .inline-code-copy-btn:focus-visible {
+                display: inline-flex;
+            }
+
             .markdown-content th {
                 background-color: var(--bg-secondary);
                 font-weight: 600;
@@ -4088,12 +4108,13 @@
                         border-radius: 5px;
                         cursor: pointer;
                         opacity: 0;
+                        pointer-events: none;
                         transition: opacity 0.12s ease, color 0.12s ease;
                         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
                         z-index: 2;
                     }
                     .inline-code-wrapper:hover .inline-code-copy-btn,
-                    .inline-code-copy-btn:focus-visible { opacity: 1; }
+                    .inline-code-copy-btn:focus-visible { opacity: 1; pointer-events: auto; }
                     .inline-code-copy-btn:hover { color: var(--text-primary, #24292f); }
                     .inline-code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
                     .inline-code-copy-btn svg { width: 0.85em; height: 0.85em; }
