@@ -3642,11 +3642,23 @@
                     .code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
                     .code-copy-btn svg { flex: 0 0 auto; }
 
-                    /* Inline copy button: a single shared floating element,
-                       positioned by JS at the right edge of the hovered line. */
+                    /* Inline code: keep each snippet whole (never split across
+                       lines) by wrapping it in an inline-block; a hover-reveal
+                       copy button sits just past its right edge, positioned
+                       purely with CSS (no JS tracking). */
+                    .inline-code-wrapper {
+                        position: relative;
+                        display: inline-block;
+                        white-space: nowrap;
+                    }
+                    .inline-code-wrapper > code { white-space: nowrap; }
                     .inline-code-copy-btn {
-                        position: fixed;
-                        display: none;
+                        position: absolute;
+                        top: 50%;
+                        left: 100%;
+                        transform: translateY(-50%);
+                        margin-left: 4px;
+                        display: inline-flex;
                         align-items: center;
                         justify-content: center;
                         width: 1.3rem;
@@ -3657,10 +3669,13 @@
                         border: 1px solid var(--border-color, #d0d7de);
                         border-radius: 5px;
                         cursor: pointer;
-                        transition: color 0.12s ease;
+                        opacity: 0;
+                        transition: opacity 0.12s ease, color 0.12s ease;
                         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
-                        z-index: 2147483000;
+                        z-index: 2;
                     }
+                    .inline-code-wrapper:hover .inline-code-copy-btn,
+                    .inline-code-copy-btn:focus-visible { opacity: 1; }
                     .inline-code-copy-btn:hover { color: var(--text-primary, #24292f); }
                     .inline-code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
                     .inline-code-copy-btn svg { width: 0.85em; height: 0.85em; }
@@ -3733,94 +3748,36 @@
                     pre.appendChild(btn);
                 });
 
-                // Inline code copy is handled by a single shared floating button
-                // (see setupInlineCopy) positioned at the right edge of the line
-                // under the cursor, so it behaves correctly when inline code wraps.
-                setupInlineCopy();
-            }
+                // Inline code (<code> outside <pre>): wrap each snippet in an
+                // inline-block so it stays whole, and add a copy button that the
+                // CSS reveals on hover at the wrapper's right edge. No mouse/scroll
+                // tracking -- the button is anchored to the snippet itself.
+                container.querySelectorAll('code').forEach(code => {
+                    if (code.closest('pre')) return;
+                    if (code.dataset.inlineCopy) return;
+                    const parent = code.parentNode;
+                    if (!parent) return;
+                    if (parent.classList && parent.classList.contains('inline-code-wrapper')) return;
+                    code.dataset.inlineCopy = '1';
 
-            // One-time setup of the shared floating copy button for inline code.
-            // Uses event delegation so it also covers documents loaded later.
-            let inlineCopyInitialized = false;
-            function setupInlineCopy() {
-                if (inlineCopyInitialized) return;
-                inlineCopyInitialized = true;
-                ensureCodeCopyStyles();
+                    const wrap = document.createElement('span');
+                    wrap.className = 'inline-code-wrapper';
+                    parent.insertBefore(wrap, code);
+                    wrap.appendChild(code);
 
-                let btn = null;
-                let target = null;
-                let hideTimer = null;
-                let lastY = 0;
-
-                function isInlineCode(code) {
-                    return code && code.tagName === 'CODE'
-                        && !code.closest('pre') && !!code.closest('.markdown-content');
-                }
-                function makeButton() {
-                    btn = document.createElement('button');
+                    const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'inline-code-copy-btn';
                     btn.setAttribute('aria-label', 'Copy code to clipboard');
                     btn.innerHTML = CODE_COPY_ICON;
-                    btn.addEventListener('mouseenter', function () { clearTimeout(hideTimer); });
-                    btn.addEventListener('mouseleave', hideSoon);
-                    btn.addEventListener('click', async function (e) {
+                    btn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (!target) return;
-                        var ok = await copyTextToClipboard(target.textContent);
+                        const ok = await copyTextToClipboard(code.textContent);
                         if (ok) flashCopied(btn, null);
                     });
-                    document.body.appendChild(btn);
-                }
-                // Returns the client rect of the wrapped line under the cursor's Y.
-                function rectForY(code, y) {
-                    var rects = code.getClientRects();
-                    for (var i = 0; i < rects.length; i++) {
-                        if (y >= rects[i].top - 2 && y <= rects[i].bottom + 2) return rects[i];
-                    }
-                    return rects[rects.length - 1] || code.getBoundingClientRect();
-                }
-                function placeAt(rect) {
-                    btn.style.display = 'inline-flex';
-                    btn.style.left = (rect.right + 4) + 'px';
-                    btn.style.top = (rect.top + rect.height / 2) + 'px';
-                    btn.style.transform = 'translateY(-50%)';
-                }
-                function hideNow() {
-                    if (btn) btn.style.display = 'none';
-                    target = null;
-                }
-                function hideSoon() {
-                    hideTimer = setTimeout(hideNow, 500);
-                }
-                function show(code, y) {
-                    if (!btn) makeButton();
-                    target = code;
-                    lastY = y;
-                    clearTimeout(hideTimer);
-                    placeAt(rectForY(code, y));
-                }
-                // Driving show/reposition from mousemove (not just mouseover)
-                // keeps the button visible while the cursor is anywhere over the
-                // snippet -- moving to the center no longer hides it.
-                document.addEventListener('mousemove', function (e) {
-                    var code = e.target && e.target.closest ? e.target.closest('code') : null;
-                    if (isInlineCode(code)) show(code, e.clientY);
-                }, true);
-                document.addEventListener('mouseout', function (e) {
-                    var code = e.target && e.target.closest ? e.target.closest('code') : null;
-                    if (code && code === target) hideSoon();
-                }, true);
-                // While the button lingers, keep it pinned to the hovered line as
-                // the page scrolls (fixed-position would otherwise freeze it in the
-                // viewport); drop it once the code scrolls out of view.
-                document.addEventListener('scroll', function () {
-                    if (!btn || !target || btn.style.display === 'none') return;
-                    var b = target.getBoundingClientRect();
-                    if (b.bottom < 0 || b.top > window.innerHeight) { hideNow(); }
-                    else { placeAt(rectForY(target, lastY)); }
-                }, true);
+                    wrap.appendChild(btn);
+                });
             }
 
             // Update AI assistant context when file changes
