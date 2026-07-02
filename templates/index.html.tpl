@@ -5800,20 +5800,28 @@
                 // Appended after the app styles so it overrides the app shell
                 // layout (which we don't want in a single-page export).
                 const EXPORT_LAYOUT_CSS = [
+                    // Undo the app shell's fixed-viewport layout so the exported
+                    // page scrolls normally.
+                    'html, body { height: auto !important; min-height: 100vh; overflow: visible !important; }',
                     'html { scroll-behavior: smooth; }',
-                    'body { margin: 0; display: block !important; min-height: 100vh;',
+                    'body { margin: 0; display: block !important;',
                     '  background: var(--bg-primary, #ffffff); color: var(--text-primary, #24292f);',
                     "  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif); }",
-                    '.export-layout { display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);',
-                    '  gap: 2.5rem; max-width: 1400px; margin: 0 auto; padding: 2rem 2.5rem 4rem; box-sizing: border-box; }',
-                    '.export-toc { position: sticky; top: 1.5rem; align-self: start; max-height: calc(100vh - 3rem);',
-                    '  overflow-y: auto; padding-right: 0.5rem; font-size: 0.85rem; }',
+                    '.export-layout { display: block; }',
+                    // TOC: pinned to the left edge, spanning the full viewport height.
+                    '.export-toc { position: fixed; top: 0; left: 0; bottom: 0; width: 17rem; box-sizing: border-box;',
+                    '  overflow-y: auto; padding: 1.5rem 1rem; font-size: 0.85rem;',
+                    '  background: var(--bg-secondary, #f6f8fa); border-right: 1px solid var(--border-color, #d0d7de); }',
                     '.export-toc-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;',
                     '  color: var(--text-secondary, #57606a); margin: 0 0 0.75rem; padding-left: 0.5rem; }',
                     '.export-toc .toc-item { display: block; }',
-                    '.export-content { min-width: 0; }',
-                    '.export-content .markdown-content { max-width: var(--content-width, 100%); margin: 0 auto; }',
+                    // Content: reserve the sidebar width, then center the reading column.
+                    '.export-content { margin-left: 17rem; padding: 2.5rem 2rem 4rem; box-sizing: border-box; }',
+                    '.export-content .markdown-content { max-width: var(--content-width, 900px); margin: 0 auto; }',
                     '.export-content .markdown-content :is(h1,h2,h3,h4,h5,h6) { scroll-margin-top: 1.5rem; }',
+                    // Narrow screens: drop the fixed sidebar back into normal flow.
+                    '@media (max-width: 820px) { .export-toc { position: static; width: auto; height: auto; border-right: none;',
+                    '  border-bottom: 1px solid var(--border-color, #d0d7de); } .export-content { margin-left: 0; padding: 1.5rem 1rem 3rem; } }',
                     '.markdown-content pre { position: relative; }',
                     '.code-copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; display: inline-flex; align-items: center;',
                     '  gap: 0.3rem; padding: 0.2rem 0.5rem; font-size: 0.72rem; line-height: 1.2; color: var(--text-secondary, #57606a);',
@@ -5822,12 +5830,13 @@
                     '.markdown-content pre:hover .code-copy-btn, .code-copy-btn:focus-visible { opacity: 1; }',
                     '.code-copy-btn:hover { color: var(--text-primary, #24292f); }',
                     '.code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }',
-                    '.inline-code-wrapper { position: relative; }',
-                    '.inline-code-copy-btn { position: absolute; bottom: 100%; right: 0; margin-bottom: 3px; display: inline-flex;',
-                    '  align-items: center; justify-content: center; width: 1.3rem; height: 1.3rem; padding: 0; color: var(--text-secondary, #57606a);',
+                    // Inline copy button is a single shared floating element,
+                    // positioned by JS at the right edge of the hovered line.
+                    '.inline-code-copy-btn { display: none; align-items: center; justify-content: center;',
+                    '  width: 1.3rem; height: 1.3rem; padding: 0; color: var(--text-secondary, #57606a);',
                     '  background: var(--bg-primary, #ffffff); border: 1px solid var(--border-color, #d0d7de); border-radius: 5px; cursor: pointer;',
-                    '  opacity: 0; transition: opacity 0.12s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.12); z-index: 3; }',
-                    '.inline-code-wrapper:hover .inline-code-copy-btn, .inline-code-copy-btn:hover, .inline-code-copy-btn:focus-visible { opacity: 1; }',
+                    '  transition: color 0.12s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15); z-index: 2147483000; }',
+                    '.inline-code-copy-btn:hover { color: var(--text-primary, #24292f); }',
                     '.inline-code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }',
                     '.inline-code-copy-btn svg { width: 0.85em; height: 0.85em; }'
                 ].join('\n');
@@ -5843,9 +5852,19 @@
                     'function flash(b,l){b.classList.add("copied");var p=l?l.textContent:null;if(l)l.textContent="Copied";setTimeout(function(){b.classList.remove("copied");if(l&&p!==null)l.textContent=p;},1200);}',
                     'function enhance(root){',
                     'root.querySelectorAll("pre").forEach(function(pre){if(pre.dataset.copyEnhanced)return;pre.dataset.copyEnhanced="1";var code=pre.querySelector("code")||pre;var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,l);});});pre.appendChild(b);});',
-                    'root.querySelectorAll("code").forEach(function(code){if(code.closest("pre"))return;if(code.dataset.copyEnhanced)return;code.dataset.copyEnhanced="1";var w=document.createElement("span");w.className="inline-code-wrapper";code.replaceWith(w);w.appendChild(code);var b=document.createElement("button");b.type="button";b.className="inline-code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,null);});});w.appendChild(b);});',
                     '}',
-                    'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){enhance(document.body);});}else{enhance(document.body);}',
+                    'function setupInlineCopy(){var btn=null,target=null,hideTimer=null;',
+                    'function isInline(c){return c&&c.tagName==="CODE"&&!c.closest("pre");}',
+                    'function make(){btn=document.createElement("button");btn.type="button";btn.className="inline-code-copy-btn";btn.setAttribute("aria-label","Copy code");btn.innerHTML=ICON;btn.style.position="fixed";btn.addEventListener("mouseenter",function(){clearTimeout(hideTimer);});btn.addEventListener("mouseleave",hideSoon);btn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(target)copyText(target.textContent).then(function(ok){if(ok)flash(btn,null);});});document.body.appendChild(btn);}',
+                    'function rectAt(code,y){var rs=code.getClientRects();for(var i=0;i<rs.length;i++){if(y>=rs[i].top-2&&y<=rs[i].bottom+2)return rs[i];}return rs[rs.length-1]||code.getBoundingClientRect();}',
+                    'function place(r){btn.style.display="inline-flex";btn.style.left=(r.right+4)+"px";btn.style.top=(r.top+r.height/2)+"px";btn.style.transform="translateY(-50%)";}',
+                    'function hideSoon(){hideTimer=setTimeout(function(){if(btn)btn.style.display="none";target=null;},150);}',
+                    'document.addEventListener("mouseover",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(!isInline(c))return;if(!btn)make();target=c;clearTimeout(hideTimer);place(rectAt(c,e.clientY));},true);',
+                    'document.addEventListener("mousemove",function(e){if(!target)return;var c=e.target&&e.target.closest?e.target.closest("code"):null;if(c===target)place(rectAt(target,e.clientY));},true);',
+                    'document.addEventListener("mouseout",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(c===target)hideSoon();},true);',
+                    '}',
+                    'function init(){enhance(document.body);setupInlineCopy();}',
+                    'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}',
                     '})();'
                 ].join('');
 
