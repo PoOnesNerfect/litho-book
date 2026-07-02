@@ -5815,6 +5815,9 @@
                     '.export-toc-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;',
                     '  color: var(--text-secondary, #57606a); margin: 0 0 0.75rem; padding-left: 0.5rem; }',
                     '.export-toc .toc-item { display: block; }',
+                    // Let the fixed sidebar own the scrolling; undo the app default
+                    // that caps the TOC list at ~70vh.
+                    '.export-toc .doc-toc-content { max-height: none; overflow: visible; padding: 0; }',
                     // Content: reserve the sidebar width, then center the reading column.
                     '.export-content { margin-left: 17rem; padding: 2.5rem 2rem 4rem; box-sizing: border-box; }',
                     '.export-content .markdown-content { max-width: var(--content-width, 900px); margin: 0 auto; }',
@@ -5858,10 +5861,10 @@
                     'function make(){btn=document.createElement("button");btn.type="button";btn.className="inline-code-copy-btn";btn.setAttribute("aria-label","Copy code");btn.innerHTML=ICON;btn.style.position="fixed";btn.addEventListener("mouseenter",function(){clearTimeout(hideTimer);});btn.addEventListener("mouseleave",hideSoon);btn.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();if(target)copyText(target.textContent).then(function(ok){if(ok)flash(btn,null);});});document.body.appendChild(btn);}',
                     'function rectAt(code,y){var rs=code.getClientRects();for(var i=0;i<rs.length;i++){if(y>=rs[i].top-2&&y<=rs[i].bottom+2)return rs[i];}return rs[rs.length-1]||code.getBoundingClientRect();}',
                     'function place(r){btn.style.display="inline-flex";btn.style.left=(r.right+4)+"px";btn.style.top=(r.top+r.height/2)+"px";btn.style.transform="translateY(-50%)";}',
-                    'function hideSoon(){hideTimer=setTimeout(function(){if(btn)btn.style.display="none";target=null;},150);}',
-                    'document.addEventListener("mouseover",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(!isInline(c))return;if(!btn)make();target=c;clearTimeout(hideTimer);place(rectAt(c,e.clientY));},true);',
-                    'document.addEventListener("mousemove",function(e){if(!target)return;var c=e.target&&e.target.closest?e.target.closest("code"):null;if(c===target)place(rectAt(target,e.clientY));},true);',
-                    'document.addEventListener("mouseout",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(c===target)hideSoon();},true);',
+                    'function hideSoon(){hideTimer=setTimeout(function(){if(btn)btn.style.display="none";target=null;},1000);}',
+                    'function show(c,y){if(!btn)make();target=c;clearTimeout(hideTimer);place(rectAt(c,y));}',
+                    'document.addEventListener("mousemove",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(isInline(c))show(c,e.clientY);},true);',
+                    'document.addEventListener("mouseout",function(e){var c=e.target&&e.target.closest?e.target.closest("code"):null;if(c&&c===target)hideSoon();},true);',
                     '}',
                     'function init(){enhance(document.body);setupInlineCopy();}',
                     'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",init);}else{init();}',
