@@ -6484,6 +6484,9 @@
                     '  background: var(--bg-primary, #ffffff); border: 1px solid var(--border-color, #d0d7de); border-radius: 5px; cursor: pointer;',
                     '  opacity: 0; pointer-events: none; transition: opacity 0.12s ease 0.3s, color 0.12s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.15); z-index: 2; }',
                     '.inline-code-wrapper:hover .inline-code-copy-btn, .inline-code-copy-btn:focus-visible { opacity: 1; pointer-events: auto; transition-delay: 0s; }',
+                    // Transparent bridge over the margin gap so moving from the code
+                    // onto the button never crosses a dead zone that would drop hover.
+                    ".inline-code-copy-btn::before { content: ''; position: absolute; top: -2px; bottom: -2px; left: -6px; width: 6px; }",
                     '.inline-code-copy-btn:hover { color: var(--text-primary, #24292f); }',
                     '.inline-code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }',
                     '.inline-code-copy-btn svg { width: 0.85em; height: 0.85em; }'
