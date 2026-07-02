@@ -3969,6 +3969,9 @@
                         }
                     }
 
+                    // Add "copy" buttons to code blocks and inline code
+                    addCodeCopyButtons(contentContainer);
+
                     // Generate document table of contents
                     setTimeout(() => {
                         TableOfContents.generate();
@@ -3998,6 +4001,168 @@
                         `;
                     }
                 }
+            }
+
+            // ---- Code copy buttons ---------------------------------------
+
+            // Icon shared by the block and inline copy buttons.
+            const CODE_COPY_ICON = '<svg viewBox="0 0 16 16" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M11 5.5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12h2"/></svg>';
+
+            // Injects the styles for the copy buttons once. Kept in JS (rather
+            // than the template <style>) so the whole feature is self-contained.
+            function ensureCodeCopyStyles() {
+                if (document.getElementById('code-copy-styles')) return;
+                const style = document.createElement('style');
+                style.id = 'code-copy-styles';
+                style.textContent = `
+                    .markdown-content pre { position: relative; }
+                    .code-copy-btn {
+                        position: absolute;
+                        top: 0.4rem;
+                        right: 0.4rem;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.3rem;
+                        padding: 0.2rem 0.5rem;
+                        font-size: 0.72rem;
+                        line-height: 1.2;
+                        color: var(--text-secondary, #57606a);
+                        background: var(--bg-primary, #ffffff);
+                        border: 1px solid var(--border-color, #d0d7de);
+                        border-radius: 6px;
+                        cursor: pointer;
+                        opacity: 0;
+                        transition: opacity 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+                        z-index: 2;
+                    }
+                    .markdown-content pre:hover .code-copy-btn,
+                    .code-copy-btn:focus-visible { opacity: 1; }
+                    .code-copy-btn:hover { color: var(--text-primary, #24292f); }
+                    .code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
+                    .code-copy-btn svg { flex: 0 0 auto; }
+
+                    .inline-code-wrapper { position: relative; }
+                    .inline-code-copy-btn {
+                        position: absolute;
+                        bottom: 100%;
+                        right: 0;
+                        margin-bottom: 3px;
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 1.3rem;
+                        height: 1.3rem;
+                        padding: 0;
+                        color: var(--text-secondary, #57606a);
+                        background: var(--bg-primary, #ffffff);
+                        border: 1px solid var(--border-color, #d0d7de);
+                        border-radius: 5px;
+                        cursor: pointer;
+                        opacity: 0;
+                        transition: opacity 0.12s ease, color 0.12s ease;
+                        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+                        z-index: 3;
+                    }
+                    .inline-code-wrapper:hover .inline-code-copy-btn,
+                    .inline-code-copy-btn:hover,
+                    .inline-code-copy-btn:focus-visible { opacity: 1; }
+                    .inline-code-copy-btn:hover { color: var(--text-primary, #24292f); }
+                    .inline-code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
+                    .inline-code-copy-btn svg { width: 0.85em; height: 0.85em; }
+                `;
+                document.head.appendChild(style);
+            }
+
+            // Copies text to the clipboard, with a fallback for insecure
+            // contexts / older browsers. Returns whether it succeeded.
+            async function copyTextToClipboard(text) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    return true;
+                } catch (err) {
+                    try {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        ta.style.position = 'fixed';
+                        ta.style.opacity = '0';
+                        document.body.appendChild(ta);
+                        ta.select();
+                        const ok = document.execCommand('copy');
+                        document.body.removeChild(ta);
+                        return ok;
+                    } catch (fallbackErr) {
+                        console.warn('Copy to clipboard failed:', fallbackErr);
+                        return false;
+                    }
+                }
+            }
+
+            // Briefly show a "copied" state on a button.
+            function flashCopied(btn, labelSpan) {
+                btn.classList.add('copied');
+                const previous = labelSpan ? labelSpan.textContent : null;
+                if (labelSpan) labelSpan.textContent = 'Copied';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    if (labelSpan && previous !== null) labelSpan.textContent = previous;
+                }, 1200);
+            }
+
+            // Adds hover-reveal "copy" buttons to fenced code blocks (<pre>) and
+            // inline code (<code>) inside the given container.
+            function addCodeCopyButtons(container) {
+                if (!container) return;
+                ensureCodeCopyStyles();
+
+                // Fenced code blocks: button in the top-right corner.
+                container.querySelectorAll('pre').forEach(pre => {
+                    if (pre.dataset.copyEnhanced) return;
+                    pre.dataset.copyEnhanced = '1';
+                    const codeEl = pre.querySelector('code') || pre;
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'code-copy-btn';
+                    btn.setAttribute('aria-label', 'Copy code to clipboard');
+                    btn.innerHTML = CODE_COPY_ICON;
+                    const label = document.createElement('span');
+                    label.textContent = 'Copy';
+                    btn.appendChild(label);
+
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const ok = await copyTextToClipboard(codeEl.textContent);
+                        if (ok) flashCopied(btn, label);
+                    });
+                    pre.appendChild(btn);
+                });
+
+                // Inline code: small button floating above the snippet on hover.
+                container.querySelectorAll('code').forEach(code => {
+                    if (code.closest('pre')) return;
+                    if (code.dataset.copyEnhanced) return;
+                    code.dataset.copyEnhanced = '1';
+
+                    const wrapper = document.createElement('span');
+                    wrapper.className = 'inline-code-wrapper';
+                    code.replaceWith(wrapper);
+                    wrapper.appendChild(code);
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'inline-code-copy-btn';
+                    btn.setAttribute('aria-label', 'Copy code to clipboard');
+                    btn.innerHTML = CODE_COPY_ICON;
+
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const ok = await copyTextToClipboard(code.textContent);
+                        if (ok) flashCopied(btn, null);
+                    });
+                    wrapper.appendChild(btn);
+                });
             }
 
             // Update AI assistant context when file changes
