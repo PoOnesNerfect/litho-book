@@ -3633,6 +3633,9 @@
                 style.id = 'code-copy-styles';
                 style.textContent = `
                     .markdown-content pre { position: relative; }
+                    /* Non-scrolling wrapper so the copy button stays pinned to the
+                       corner even when the <pre> scrolls horizontally. */
+                    .code-block-wrapper { position: relative; }
                     .code-copy-btn {
                         position: absolute;
                         top: 0.4rem;
@@ -3652,7 +3655,7 @@
                         transition: opacity 0.12s ease, color 0.12s ease, border-color 0.12s ease;
                         z-index: 2;
                     }
-                    .markdown-content pre:hover .code-copy-btn,
+                    .code-block-wrapper:hover .code-copy-btn,
                     .code-copy-btn:focus-visible { opacity: 1; }
                     .code-copy-btn:hover { color: var(--text-primary, #24292f); }
                     .code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
@@ -3740,11 +3743,24 @@
                 if (!container) return;
                 ensureCodeCopyStyles();
 
-                // Fenced code blocks: button in the top-right corner.
+                // Fenced code blocks: button pinned to the top-right corner of a
+                // non-scrolling wrapper (so it doesn't move when the <pre> scrolls
+                // horizontally).
                 container.querySelectorAll('pre').forEach(pre => {
                     if (pre.dataset.copyEnhanced) return;
                     pre.dataset.copyEnhanced = '1';
                     const codeEl = pre.querySelector('code') || pre;
+
+                    const parent = pre.parentNode;
+                    let wrapper = pre.parentElement;
+                    if (!wrapper || !wrapper.classList.contains('code-block-wrapper')) {
+                        wrapper = document.createElement('div');
+                        wrapper.className = 'code-block-wrapper';
+                        if (parent) {
+                            parent.insertBefore(wrapper, pre);
+                            wrapper.appendChild(pre);
+                        }
+                    }
 
                     const btn = document.createElement('button');
                     btn.type = 'button';
@@ -3761,7 +3777,7 @@
                         const ok = await copyTextToClipboard(codeEl.textContent);
                         if (ok) flashCopied(btn, label);
                     });
-                    pre.appendChild(btn);
+                    wrapper.appendChild(btn);
                 });
 
                 // Inline code (<code> outside <pre>): wrap each snippet in an
