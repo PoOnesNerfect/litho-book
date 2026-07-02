@@ -880,6 +880,21 @@
                 border: 1px solid var(--border-color);
                 padding: 0.75rem 1rem;
                 text-align: left;
+                /* Let long content (URLs, UUIDs, inline code) break so the table
+                   fits its container width and grows in height instead of
+                   overflowing horizontally. */
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+
+            /* Inline code is nowrap in prose so snippets stay whole, but inside a
+               table cell that would force the column wider than the page. Allow it
+               to wrap within cells so the table fits the content width. */
+            .markdown-content th .inline-code-wrapper,
+            .markdown-content td .inline-code-wrapper,
+            .markdown-content th .inline-code-wrapper > code,
+            .markdown-content td .inline-code-wrapper > code {
+                white-space: normal;
             }
 
             .markdown-content th {
