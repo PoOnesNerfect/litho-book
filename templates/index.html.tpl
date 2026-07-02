@@ -5762,5 +5762,206 @@
                 }
             });
         </script>
+        <!-- ============================================================
+             Static single-page HTML export
+             Builds a self-contained .html of the current document (no file
+             explorer / search / AI chat), with the file's table of contents on
+             the left and the current reader settings (theme, width, fonts)
+             baked in, then downloads it. Self-contained so it does not depend
+             on any other feature being present.
+             ============================================================ -->
+        <style id="export-ui-styles">
+            .export-html-btn {
+                margin-left: auto;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.4rem;
+                padding: 0.35rem 0.7rem;
+                font-size: 0.8rem;
+                color: var(--text-secondary, #57606a);
+                background: var(--bg-primary, #ffffff);
+                border: 1px solid var(--border-color, #d0d7de);
+                border-radius: 6px;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: color 0.12s ease, border-color 0.12s ease;
+            }
+            .export-html-btn:hover {
+                color: var(--text-primary, #24292f);
+                border-color: var(--text-secondary, #57606a);
+            }
+            .export-html-btn svg { width: 1em; height: 1em; flex: 0 0 auto; }
+        </style>
+        <script>
+            (function () {
+                'use strict';
+
+                // Layout + copy-button styles for the exported standalone file.
+                // Appended after the app styles so it overrides the app shell
+                // layout (which we don't want in a single-page export).
+                const EXPORT_LAYOUT_CSS = [
+                    'html { scroll-behavior: smooth; }',
+                    'body { margin: 0; display: block !important; min-height: 100vh;',
+                    '  background: var(--bg-primary, #ffffff); color: var(--text-primary, #24292f);',
+                    "  font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif); }",
+                    '.export-layout { display: grid; grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);',
+                    '  gap: 2.5rem; max-width: 1400px; margin: 0 auto; padding: 2rem 2.5rem 4rem; box-sizing: border-box; }',
+                    '.export-toc { position: sticky; top: 1.5rem; align-self: start; max-height: calc(100vh - 3rem);',
+                    '  overflow-y: auto; padding-right: 0.5rem; font-size: 0.85rem; }',
+                    '.export-toc-title { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;',
+                    '  color: var(--text-secondary, #57606a); margin: 0 0 0.75rem; padding-left: 0.5rem; }',
+                    '.export-toc .toc-item { display: block; }',
+                    '.export-content { min-width: 0; }',
+                    '.export-content .markdown-content { max-width: var(--content-width, 100%); margin: 0 auto; }',
+                    '.export-content .markdown-content :is(h1,h2,h3,h4,h5,h6) { scroll-margin-top: 1.5rem; }',
+                    '.markdown-content pre { position: relative; }',
+                    '.code-copy-btn { position: absolute; top: 0.4rem; right: 0.4rem; display: inline-flex; align-items: center;',
+                    '  gap: 0.3rem; padding: 0.2rem 0.5rem; font-size: 0.72rem; line-height: 1.2; color: var(--text-secondary, #57606a);',
+                    '  background: var(--bg-primary, #ffffff); border: 1px solid var(--border-color, #d0d7de); border-radius: 6px;',
+                    '  cursor: pointer; opacity: 0; transition: opacity 0.12s ease, color 0.12s ease; z-index: 2; }',
+                    '.markdown-content pre:hover .code-copy-btn, .code-copy-btn:focus-visible { opacity: 1; }',
+                    '.code-copy-btn:hover { color: var(--text-primary, #24292f); }',
+                    '.code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }',
+                    '.inline-code-wrapper { position: relative; }',
+                    '.inline-code-copy-btn { position: absolute; bottom: 100%; right: 0; margin-bottom: 3px; display: inline-flex;',
+                    '  align-items: center; justify-content: center; width: 1.3rem; height: 1.3rem; padding: 0; color: var(--text-secondary, #57606a);',
+                    '  background: var(--bg-primary, #ffffff); border: 1px solid var(--border-color, #d0d7de); border-radius: 5px; cursor: pointer;',
+                    '  opacity: 0; transition: opacity 0.12s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.12); z-index: 3; }',
+                    '.inline-code-wrapper:hover .inline-code-copy-btn, .inline-code-copy-btn:hover, .inline-code-copy-btn:focus-visible { opacity: 1; }',
+                    '.inline-code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }',
+                    '.inline-code-copy-btn svg { width: 0.85em; height: 0.85em; }'
+                ].join('\n');
+
+                // Minimal script embedded in the exported file: wires up the copy
+                // buttons (the TOC works via native #anchor links). Written as a
+                // plain string so it can be inlined verbatim.
+                const EXPORT_RUNTIME_JS = [
+                    '(function(){',
+                    'var ICON=\'<svg viewBox="0 0 16 16" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M11 5.5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12h2"/></svg>\';',
+                    'function fallback(t){try{var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();var ok=document.execCommand("copy");document.body.removeChild(ta);return ok;}catch(e){return false;}}',
+                    'function copyText(t){if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(t).then(function(){return true;}).catch(function(){return fallback(t);});}return Promise.resolve(fallback(t));}',
+                    'function flash(b,l){b.classList.add("copied");var p=l?l.textContent:null;if(l)l.textContent="Copied";setTimeout(function(){b.classList.remove("copied");if(l&&p!==null)l.textContent=p;},1200);}',
+                    'function enhance(root){',
+                    'root.querySelectorAll("pre").forEach(function(pre){if(pre.dataset.copyEnhanced)return;pre.dataset.copyEnhanced="1";var code=pre.querySelector("code")||pre;var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,l);});});pre.appendChild(b);});',
+                    'root.querySelectorAll("code").forEach(function(code){if(code.closest("pre"))return;if(code.dataset.copyEnhanced)return;code.dataset.copyEnhanced="1";var w=document.createElement("span");w.className="inline-code-wrapper";code.replaceWith(w);w.appendChild(code);var b=document.createElement("button");b.type="button";b.className="inline-code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,null);});});w.appendChild(b);});',
+                    '}',
+                    'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){enhance(document.body);});}else{enhance(document.body);}',
+                    '})();'
+                ].join('');
+
+                function escapeHtml(s) {
+                    return String(s).replace(/[&<>"']/g, function (c) {
+                        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+                    });
+                }
+
+                // Remove copy buttons the live app may have injected, so the
+                // exported file starts clean and its own script re-adds them.
+                function stripLiveCopyButtons(root) {
+                    root.querySelectorAll('.code-copy-btn, .inline-code-copy-btn').forEach(function (b) { b.remove(); });
+                    root.querySelectorAll('.inline-code-wrapper').forEach(function (w) {
+                        var code = w.querySelector('code');
+                        if (code) { w.replaceWith(code); }
+                    });
+                    root.querySelectorAll('[data-copy-enhanced]').forEach(function (el) { el.removeAttribute('data-copy-enhanced'); });
+                }
+
+                function buildExportDocument() {
+                    var contentEl = document.querySelector('.markdown-content');
+                    if (!contentEl) { return null; }
+
+                    var styles = Array.prototype.map.call(
+                        document.querySelectorAll('style'), function (s) { return s.textContent; }
+                    ).join('\n');
+
+                    var fontLinks = Array.prototype.map.call(
+                        document.querySelectorAll('head link[rel="preconnect"], head link[href*="fonts.googleapis"]'),
+                        function (l) { return l.outerHTML; }
+                    ).join('\n');
+
+                    var rootEl = document.documentElement;
+                    var theme = rootEl.getAttribute('data-theme') || '';
+                    var contentWidth = rootEl.style.getPropertyValue('--content-width') || '100%';
+                    var fontFamily = rootEl.style.getPropertyValue('--font-family') || '';
+                    var fontSizeScale = rootEl.style.getPropertyValue('--font-size-scale') || '1';
+
+                    var contentClone = contentEl.cloneNode(true);
+                    stripLiveCopyButtons(contentClone);
+
+                    var tocEl = document.getElementById('tocContent');
+                    var tocHtml = (tocEl && tocEl.children.length) ? tocEl.innerHTML : '';
+
+                    var titleEl = contentClone.querySelector('h1');
+                    var docTitle = (titleEl ? titleEl.textContent
+                        : ((typeof currentFile === 'string' && currentFile)
+                            ? currentFile.split('/').pop().replace(/\.md$/i, '') : 'Document')).trim();
+
+                    var rootStyle = '--content-width:' + contentWidth + ';--font-size-scale:' + fontSizeScale + ';';
+                    if (fontFamily) { rootStyle += '--font-family:' + fontFamily + ';'; }
+
+                    var tocAside = tocHtml
+                        ? '<aside class="export-toc"><div class="export-toc-title">On this page</div><nav class="doc-toc-content">' + tocHtml + '</nav></aside>'
+                        : '';
+
+                    var html = '<!DOCTYPE html>\n'
+                        + '<html lang="en"' + (theme ? ' data-theme="' + escapeHtml(theme) + '"' : '') + ' style="' + rootStyle + '">\n'
+                        + '<head>\n'
+                        + '<meta charset="utf-8">\n'
+                        + '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+                        + '<title>' + escapeHtml(docTitle) + '</title>\n'
+                        + fontLinks + '\n'
+                        + '<style>\n' + styles + '\n</style>\n'
+                        + '<style>\n' + EXPORT_LAYOUT_CSS + '\n</style>\n'
+                        + '</head>\n'
+                        + '<body>\n'
+                        + '<div class="export-layout">\n'
+                        + tocAside + '\n'
+                        + '<main class="export-content"><div class="markdown-content">' + contentClone.innerHTML + '</div></main>\n'
+                        + '</div>\n'
+                        + '<script>' + EXPORT_RUNTIME_JS + '<\/script>\n'
+                        + '</body>\n</html>';
+
+                    return { html: html, docTitle: docTitle };
+                }
+
+                function downloadExport() {
+                    var result = buildExportDocument();
+                    if (!result) {
+                        if (typeof showToast === 'function') { showToast('Open a document first', 'error'); }
+                        return;
+                    }
+                    var safeName = (result.docTitle || 'document').toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'document';
+                    var blob = new Blob([result.html], { type: 'text/html;charset=utf-8' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = safeName + '.html';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+                    if (typeof showToast === 'function') { showToast('Exported standalone HTML'); }
+                }
+
+                function injectExportButton() {
+                    var header = document.querySelector('.content-header');
+                    if (!header || header.querySelector('.export-html-btn')) { return; }
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'export-html-btn';
+                    btn.title = 'Export this page as a standalone HTML file';
+                    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M8 1.5v8M8 9.5 5 6.5M8 9.5l3-3M2.5 11v2A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5v-2"/></svg><span>Export</span>';
+                    btn.addEventListener('click', downloadExport);
+                    header.appendChild(btn);
+                }
+
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', injectExportButton);
+                } else {
+                    injectExportButton();
+                }
+            })();
+        </script>
     </body>
 </html>
