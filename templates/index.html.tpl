@@ -4110,6 +4110,18 @@
                     }
                     .inline-code-wrapper:hover .inline-code-copy-btn,
                     .inline-code-copy-btn:focus-visible { opacity: 1; pointer-events: auto; transition-delay: 0s; }
+                    /* Transparent bridge across the margin gap so moving the cursor
+                       from the code onto the button never crosses a dead zone (which
+                       would drop wrapper:hover, cut pointer-events, and make the
+                       button unclickable / vanish before you reach it). */
+                    .inline-code-copy-btn::before {
+                        content: '';
+                        position: absolute;
+                        top: -2px;
+                        bottom: -2px;
+                        left: -6px;
+                        width: 6px;
+                    }
                     .inline-code-copy-btn:hover { color: var(--text-primary, #24292f); }
                     .inline-code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
                     .inline-code-copy-btn svg { width: 0.85em; height: 0.85em; }
