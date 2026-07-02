@@ -1096,24 +1096,17 @@
                 white-space: normal;
             }
 
-            /* In a cell the code wraps, so the wrapper fills the column width and
-               an absolute right-edge button would sit far from the (short) last
-               line and get clipped at the cell border. Let the button flow in-line
-               right after the code instead, revealed on hover. */
+            /* In a cell the code wraps and the wrapper fills the column, so the
+               prose right-edge anchoring (left:100%) drops the button at the far
+               cell edge with a big gap. Keep it absolutely positioned -- so
+               revealing it never reflows the table -- but let it fall at its
+               static position (right after the code's last line) via auto insets. */
             .markdown-content th .inline-code-copy-btn,
             .markdown-content td .inline-code-copy-btn {
-                position: static;
+                left: auto;
+                top: auto;
                 transform: none;
                 margin-left: 4px;
-                vertical-align: middle;
-                opacity: 1;
-                display: none;
-            }
-            .markdown-content th .inline-code-wrapper:hover .inline-code-copy-btn,
-            .markdown-content td .inline-code-wrapper:hover .inline-code-copy-btn,
-            .markdown-content th .inline-code-copy-btn:focus-visible,
-            .markdown-content td .inline-code-copy-btn:focus-visible {
-                display: inline-flex;
             }
 
             .markdown-content th {
