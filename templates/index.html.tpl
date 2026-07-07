@@ -3570,8 +3570,22 @@
                     if (query) {
                         performSearch(query);
                     } else {
+                        // Preserve which folders are open and keep the current file
+                        // highlighted/revealed across the re-render, so a background
+                        // refresh doesn't collapse the tree the reader had open.
+                        const expandedFolders = captureExpandedFolders();
                         treeContainer.innerHTML = '';
                         renderTreeChildren(treeData, treeContainer);
+                        restoreExpandedFolders(expandedFolders);
+
+                        if (currentFile) {
+                            const activeItem = Array.from(treeContainer.querySelectorAll('.tree-item'))
+                                .find(item => item.dataset.path === currentFile);
+                            if (activeItem) {
+                                activeItem.classList.add('active');
+                                revealActiveTreeItem(activeItem);
+                            }
+                        }
                     }
 
                     // Only re-render the document when the current page itself changed,
@@ -3769,6 +3783,7 @@
                     itemDiv.addEventListener('click', () => loadFile(node.path));
                 } else {
                     iconSpan.className += ' folder-icon';
+                    itemDiv.dataset.path = node.path;
                     itemDiv.addEventListener('click', () => toggleFolder(nodeDiv, iconSpan));
                 }
 
@@ -3820,6 +3835,34 @@
                 } else {
                     window.history.pushState(state, '', url);
                 }
+            }
+
+            // Records the paths of currently-expanded folders so the expansion
+            // state survives a tree re-render (e.g. the periodic live refresh).
+            function captureExpandedFolders() {
+                const expanded = new Set();
+                document.querySelectorAll('#tree-container .tree-node').forEach(nodeDiv => {
+                    const item = nodeDiv.firstElementChild;
+                    const children = nodeDiv.querySelector(':scope > .tree-children');
+                    if (item && children && item.dataset.path && !children.classList.contains('collapsed')) {
+                        expanded.add(item.dataset.path);
+                    }
+                });
+                return expanded;
+            }
+
+            // Re-expands the folders captured by captureExpandedFolders().
+            function restoreExpandedFolders(paths) {
+                if (!paths || !paths.size) return;
+                document.querySelectorAll('#tree-container .tree-node').forEach(nodeDiv => {
+                    const item = nodeDiv.firstElementChild;
+                    const children = nodeDiv.querySelector(':scope > .tree-children');
+                    if (item && children && item.dataset.path && paths.has(item.dataset.path)) {
+                        children.classList.remove('collapsed');
+                        const icon = item.querySelector('.tree-icon.folder-icon');
+                        if (icon) icon.classList.add('open');
+                    }
+                });
             }
 
             function revealActiveTreeItem(activeItem) {
