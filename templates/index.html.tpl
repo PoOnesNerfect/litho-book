@@ -3333,6 +3333,7 @@
             // Document tree data
             let treeData = {{ tree_json|safe }};
             let treeDataSnapshot = JSON.stringify(treeData);
+            let treeStructureSnapshot = treeStructureSignature(treeData);
             let currentFile = null;
             const currentFileStorageKey = 'litho-book-current-file';
             let allFiles = [];
@@ -3539,6 +3540,21 @@
                 return before.modified !== after.modified || before.size !== after.size;
             }
 
+            // A signature of the tree's shape (names/paths/hierarchy) that ignores
+            // per-file size/modified, so pure content edits don't look like a
+            // structural change and don't trigger a tree DOM rebuild.
+            function treeStructure(node) {
+                return {
+                    n: node.name,
+                    p: node.path,
+                    f: node.is_file,
+                    c: (node.children || []).map(treeStructure),
+                };
+            }
+            function treeStructureSignature(node) {
+                return JSON.stringify(treeStructure(node));
+            }
+
             async function refreshDocumentTreeFromServer() {
                 try {
                     const response = await fetch('/api/tree');
@@ -3552,27 +3568,33 @@
                         return;
                     }
 
-                    // Decide whether the page currently being read actually changed
-                    // *before* we swap in the new tree, so we can avoid reloading
-                    // (and scroll-resetting) it for unrelated edits elsewhere.
+                    // Decide, before swapping in the new tree, both whether the page
+                    // being read actually changed and whether the tree's *structure*
+                    // changed. Content-only edits shouldn't reload the page or rebuild
+                    // the tree (which would reset the sidebar scroll/expansion).
                     const shouldReloadCurrent = currentFile
                         && currentFileContentChanged(treeData, nextTreeData, currentFile);
+                    const nextStructure = treeStructureSignature(nextTreeData);
+                    const structureChanged = nextStructure !== treeStructureSnapshot;
 
                     treeData = nextTreeData;
                     treeDataSnapshot = nextSnapshot;
+                    treeStructureSnapshot = nextStructure;
                     originalTreeData = nextTreeData;
                     allFiles = [];
                     collectFiles(treeData);
 
-                    // Always refresh the file tree UI (cheap, doesn't touch scroll).
+                    // Rebuild the file tree only when its structure changed (files
+                    // added/removed/renamed); pure content edits leave the tree — and
+                    // its scroll position and expansion — untouched. Search results,
+                    // however, depend on content, so refresh those on any change.
                     const treeContainer = document.getElementById('tree-container');
                     const query = document.getElementById('searchInput')?.value.trim();
                     if (query) {
                         performSearch(query);
-                    } else {
+                    } else if (structureChanged) {
                         // Preserve which folders are open and keep the current file
-                        // highlighted/revealed across the re-render, so a background
-                        // refresh doesn't collapse the tree the reader had open.
+                        // highlighted/revealed across the re-render.
                         const expandedFolders = captureExpandedFolders();
                         treeContainer.innerHTML = '';
                         renderTreeChildren(treeData, treeContainer);
@@ -3589,12 +3611,15 @@
                     }
 
                     // Only re-render the document when the current page itself changed,
-                    // and keep the reader's scroll position when we do.
+                    // keeping the reader's scroll position. throwOnError so a failed
+                    // background reload leaves the current page intact rather than
+                    // replacing it with an error.
                     if (shouldReloadCurrent) {
                         await loadFile(currentFile, {
                             updateHistory: false,
                             forceReload: true,
                             preserveScroll: true,
+                            throwOnError: true,
                         });
                     }
                 } catch (error) {
