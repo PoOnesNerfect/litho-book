@@ -3515,6 +3515,30 @@
                 treeContainer.innerHTML = html;
             }
 
+            // Finds a file node by path within the tree (depth-first).
+            function findFileNode(node, path) {
+                if (!node) return null;
+                if (node.is_file && node.path === path) return node;
+                if (node.children) {
+                    for (const child of node.children) {
+                        const found = findFileNode(child, path);
+                        if (found) return found;
+                    }
+                }
+                return null;
+            }
+
+            // Whether the current file's own content changed between two tree
+            // snapshots. Returns false when the file was newly created or removed
+            // (nothing to re-render into the current view) so unrelated edits never
+            // disturb the page you're reading.
+            function currentFileContentChanged(prevTree, nextTree, path) {
+                const before = findFileNode(prevTree, path);
+                const after = findFileNode(nextTree, path);
+                if (!before || !after) return false;
+                return before.modified !== after.modified || before.size !== after.size;
+            }
+
             async function refreshDocumentTreeFromServer() {
                 try {
                     const response = await fetch('/api/tree');
@@ -3528,12 +3552,19 @@
                         return;
                     }
 
+                    // Decide whether the page currently being read actually changed
+                    // *before* we swap in the new tree, so we can avoid reloading
+                    // (and scroll-resetting) it for unrelated edits elsewhere.
+                    const shouldReloadCurrent = currentFile
+                        && currentFileContentChanged(treeData, nextTreeData, currentFile);
+
                     treeData = nextTreeData;
                     treeDataSnapshot = nextSnapshot;
                     originalTreeData = nextTreeData;
                     allFiles = [];
                     collectFiles(treeData);
 
+                    // Always refresh the file tree UI (cheap, doesn't touch scroll).
                     const treeContainer = document.getElementById('tree-container');
                     const query = document.getElementById('searchInput')?.value.trim();
                     if (query) {
@@ -3543,10 +3574,13 @@
                         renderTreeChildren(treeData, treeContainer);
                     }
 
-                    if (currentFile) {
+                    // Only re-render the document when the current page itself changed,
+                    // and keep the reader's scroll position when we do.
+                    if (shouldReloadCurrent) {
                         await loadFile(currentFile, {
                             updateHistory: false,
                             forceReload: true,
+                            preserveScroll: true,
                         });
                     }
                 } catch (error) {
@@ -3843,14 +3877,22 @@
                 const updateHistory = options.updateHistory !== false;
                 const replaceHistory = options.replaceHistory === true;
                 const throwOnError = options.throwOnError === true;
+                // On a live-reload of the page being read, keep the old content
+                // and scroll position in place until the new HTML is ready, so the
+                // view updates without a spinner flash or jump to the top.
+                const preserveScroll = options.preserveScroll === true;
+                const scrollEl = document.querySelector('.content');
+                const savedScroll = (preserveScroll && scrollEl) ? scrollEl.scrollTop : 0;
 
                 const contentContainer = document.getElementById('content-container');
-                contentContainer.innerHTML = `
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <p>Loading document...</p>
-                    </div>
-                `;
+                if (!preserveScroll) {
+                    contentContainer.innerHTML = `
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <p>Loading document...</p>
+                        </div>
+                    `;
+                }
 
                 try {
                     const response = await fetch(`/api/file?file=${encodeURIComponent(filePath)}`);
@@ -4006,8 +4048,14 @@
                         TableOfContents.generate();
                     }, 100);
 
-                    // Scroll to top
-                    contentContainer.scrollTop = 0;
+                    // Restore the reader's scroll position on a live-reload of the
+                    // current page; otherwise scroll to top as for a fresh open.
+                    if (preserveScroll && scrollEl) {
+                        scrollEl.scrollTop = savedScroll;
+                    } else {
+                        contentContainer.scrollTop = 0;
+                        if (scrollEl) scrollEl.scrollTop = 0;
+                    }
 
                     // Automatically hide sidebar on mobile
                     if (window.innerWidth <= 768) {
