@@ -6684,7 +6684,34 @@
                     root.querySelectorAll('[data-inline-copy]').forEach(function (el) { el.removeAttribute('data-inline-copy'); });
                 }
 
-                function buildExportDocument() {
+                // Fetch every <img> in the clone and inline it as a base64
+                // data: URI so the exported file is self-contained. Image srcs
+                // point at the server's /raw/ route (or external URLs); without
+                // inlining they break the moment the standalone file is opened
+                // without the server. Same-origin /raw images always fetch;
+                // cross-origin fetches that fail (CORS) keep their original src.
+                async function inlineImages(root) {
+                    var imgs = Array.prototype.slice.call(root.querySelectorAll('img'));
+                    await Promise.all(imgs.map(async function (img) {
+                        var src = img.getAttribute('src');
+                        if (!src || src.indexOf('data:') === 0) { return; }
+                        try {
+                            var resp = await fetch(src);
+                            if (!resp.ok) { return; }
+                            var blob = await resp.blob();
+                            var dataUrl = await new Promise(function (resolve, reject) {
+                                var fr = new FileReader();
+                                fr.onload = function () { resolve(fr.result); };
+                                fr.onerror = reject;
+                                fr.readAsDataURL(blob);
+                            });
+                            img.setAttribute('src', dataUrl);
+                            img.removeAttribute('srcset');
+                        } catch (e) { /* leave original src on failure */ }
+                    }));
+                }
+
+                async function buildExportDocument() {
                     var contentEl = document.querySelector('.markdown-content');
                     if (!contentEl) { return null; }
 
@@ -6705,6 +6732,7 @@
 
                     var contentClone = contentEl.cloneNode(true);
                     stripLiveCopyButtons(contentClone);
+                    await inlineImages(contentClone);
 
                     var tocEl = document.getElementById('tocContent');
                     var tocHtml = (tocEl && tocEl.children.length) ? tocEl.innerHTML : '';
@@ -6742,8 +6770,8 @@
                     return { html: html, docTitle: docTitle };
                 }
 
-                function downloadExport() {
-                    var result = buildExportDocument();
+                async function downloadExport() {
+                    var result = await buildExportDocument();
                     if (!result) {
                         if (typeof showToast === 'function') { showToast('Open a document first', 'error'); }
                         return;
