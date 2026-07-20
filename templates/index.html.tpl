@@ -771,7 +771,7 @@
 
             .sidebar {
                 width: 320px;
-                height: 100vh;
+                height: 100%;
                 background: var(--sidebar-bg);
                 border-right: 1px solid var(--border-color);
                 display: flex;
@@ -1033,6 +1033,15 @@
 
             .markdown-content li {
                 margin: 0.5rem 0;
+            }
+
+            /* Constrain images (charts, screenshots) to the content width so
+               they never overflow the column; keep aspect ratio via height:auto. */
+            .markdown-content img {
+                max-width: 100%;
+                height: auto;
+                display: block;
+                margin: 1.5rem 0;
             }
 
             .markdown-content code {
@@ -1368,7 +1377,13 @@
 
             /* Table of contents container styles */
             .tree-container {
-                height: calc(100vh - 120px);
+                /* Fill the remaining sidebar height instead of a hardcoded
+                   calc(100vh - 120px). The header/search box above this are
+                   taller than 120px, so a fixed height pushed the tree past the
+                   viewport and cut off the last item. flex:1 + min-height:0 lets
+                   it shrink correctly and scroll internally. */
+                flex: 1;
+                min-height: 0;
                 overflow-y: auto;
                 overflow-x: hidden;
                 padding: 0 1rem 1rem 1rem;

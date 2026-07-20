@@ -135,6 +135,11 @@ pub fn create_router(
         .route("/api/stats", get(stats_handler))
         .route("/api/chat", post(chat_stream_handler))
         .route("/health", get(health_handler))
+        // Serve raw files (images, etc.) referenced by markdown out of the docs
+        // directory. Relative image URLs are rewritten to /raw/... at render
+        // time (see DocumentTree::render_markdown). ServeDir prevents path
+        // traversal outside docs_dir.
+        .nest_service("/raw", ServeDir::new(docs_dir))
         .nest_service("/assets", ServeDir::new("assets"))
         .layer(CorsLayer::permissive())
         .with_state(state)
@@ -263,7 +268,11 @@ async fn get_file_handler(
         StatusCode::NOT_FOUND
     })?;
 
-    let html = doc_tree.render_markdown(&content);
+    // Directory of the current document (doc-tree-relative, forward slashes).
+    // Relative image URLs in the markdown resolve against this so the /raw/
+    // route serves them from the correct docs subfolder.
+    let base_dir = file_path.rsplit_once('/').map(|(dir, _)| dir).unwrap_or("");
+    let html = doc_tree.render_markdown(&content, base_dir);
 
     // Get file metadata if available
     let file_info = doc_tree

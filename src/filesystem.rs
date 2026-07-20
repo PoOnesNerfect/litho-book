@@ -3,6 +3,51 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use tracing::{debug, warn};
 
+/// Rewrite a relative markdown asset URL (e.g. an image `src`) so it resolves
+/// against the `/raw/` static route that serves the docs directory.
+///
+/// `url` is the raw destination from the markdown (e.g. "charts/x.png",
+/// "../shared/y.png", "https://example.com/z.png"). `base_dir` is the
+/// document-tree-relative directory of the file containing the link (e.g.
+/// "testing/read-cache-validation", or "" for a root file).
+///
+/// External URLs, protocol-relative URLs, `data:`/`mailto:` URIs, page anchors,
+/// and already-rooted paths (starting with "/") are returned unchanged — only
+/// document-relative paths are rewritten. The joined path is normalized (`.`
+/// and `..` segments collapsed) and spaces are percent-encoded so the result is
+/// a valid URL.
+fn rewrite_relative_asset_url(url: &str, base_dir: &str) -> String {
+    if url.is_empty()
+        || url.starts_with('/')
+        || url.starts_with('#')
+        || url.starts_with("data:")
+        || url.starts_with("mailto:")
+        || url.starts_with("//")
+        || url.contains("://")
+    {
+        return url.to_string();
+    }
+
+    let joined = if base_dir.is_empty() {
+        url.to_string()
+    } else {
+        format!("{}/{}", base_dir.trim_end_matches('/'), url)
+    };
+
+    let mut segments: Vec<&str> = Vec::new();
+    for seg in joined.split('/') {
+        match seg {
+            "" | "." => {}
+            ".." => {
+                segments.pop();
+            }
+            s => segments.push(s),
+        }
+    }
+
+    format!("/raw/{}", segments.join("/").replace(' ', "%20"))
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FileNode {
     pub name: String,
@@ -265,9 +310,21 @@ impl DocumentTree {
         Ok(content)
     }
 
-    /// Render markdown content to HTML
-    pub fn render_markdown(&self, content: &str) -> String {
-        use pulldown_cmark::{Options, Parser, html};
+    /// Render markdown content to HTML.
+    ///
+    /// `base_dir` is the document-tree-relative directory of the file being
+    /// rendered (e.g. "testing/read-cache-validation", or "" for a root-level
+    /// file). It is used to rewrite *relative* image URLs so they resolve
+    /// against the `/raw/` static route that serves files out of the docs
+    /// directory.
+    ///
+    /// Why this is needed: the content is a single-page app served at "/", so a
+    /// markdown `![](charts/x.png)` would otherwise resolve against the page URL
+    /// ("/charts/x.png") — a path the server has no route for — and render as a
+    /// broken-image placeholder. Rewriting to `/raw/<file-dir>/charts/x.png`
+    /// points the browser at the docs-directory file server instead.
+    pub fn render_markdown(&self, content: &str, base_dir: &str) -> String {
+        use pulldown_cmark::{Event, Options, Parser, Tag, html};
 
         let mut options = Options::empty();
         options.insert(Options::ENABLE_TABLES);
@@ -277,7 +334,24 @@ impl DocumentTree {
         options.insert(Options::ENABLE_SMART_PUNCTUATION);
         options.insert(Options::ENABLE_HEADING_ATTRIBUTES);
 
-        let parser = Parser::new_ext(content, options);
+        // Intercept image tags and rewrite relative sources. External URLs,
+        // data URIs, anchors, and already-rooted paths are passed through
+        // untouched (see rewrite_relative_asset_url).
+        let parser = Parser::new_ext(content, options).map(|event| match event {
+            Event::Start(Tag::Image {
+                link_type,
+                dest_url,
+                title,
+                id,
+            }) => Event::Start(Tag::Image {
+                link_type,
+                dest_url: rewrite_relative_asset_url(&dest_url, base_dir).into(),
+                title,
+                id,
+            }),
+            other => other,
+        });
+
         let mut html_output = String::new();
         html::push_html(&mut html_output, parser);
 
