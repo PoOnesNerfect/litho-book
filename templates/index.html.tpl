@@ -121,23 +121,23 @@
                from Light (and it avoids Morandi's all-over brown). */
             [data-theme="warm"] {
                 --bg-primary: #ffffff;
-                --bg-secondary: #faf7f1;
-                --bg-tertiary: #f1ebe0;
+                --bg-secondary: #fbf8f3;
+                --bg-tertiary: #f4efe7;
                 --text-primary: #333333;
                 --text-secondary: #6c757d;
                 --text-tertiary: #495057;
-                --border-color: #ece4d6;
+                --border-color: #efe8dc;
                 --accent-color: #b0554a;
                 --accent-hover: #934539;
                 --header-bg: #33302b;
                 --header-text: #ffffff;
-                --sidebar-bg: #faf7f1;
-                --code-bg: #f5f0e7;
+                --sidebar-bg: #fbf8f3;
+                --code-bg: #f6f2ea;
                 --code-text: #8f3d2c;
-                --pre-bg: #fcf9f4;
-                --table-stripe: #faf7f1;
-                --blockquote-bg: #fcf9f4;
-                --shadow: rgba(0, 0, 0, 0.08);
+                --pre-bg: #fdfbf7;
+                --table-stripe: #fbf8f3;
+                --blockquote-bg: #fdfbf7;
+                --shadow: rgba(0, 0, 0, 0.06);
             }
 
             /* Dark theme */
@@ -992,7 +992,7 @@
                the (otherwise too-faint) block-quote text. */
             [data-theme="warm"] .tree-item.active {
                 background-color: #f4e2d7;
-                color: #a04a38;
+                color: #6f2f21;
             }
             [data-theme="warm"] .markdown-content blockquote {
                 color: #4a453f;
