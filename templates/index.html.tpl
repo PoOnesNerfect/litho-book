@@ -4,6 +4,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Litho Book</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>" />
         <!-- Load fonts -->
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -113,6 +114,31 @@
             .markdown-content .hljs-deletion { color: var(--hl-keyword); }
             .markdown-content .hljs-emphasis { font-style: italic; }
             .markdown-content .hljs-strong { font-weight: 600; }
+
+            /* Warm theme -- the crisp Light theme with a warm accent. Primary
+               background stays white and text stays neutral/crisp; only the
+               accent and a faint warmth on secondary surfaces distinguish it
+               from Light (and it avoids Morandi's all-over brown). */
+            [data-theme="warm"] {
+                --bg-primary: #ffffff;
+                --bg-secondary: #faf7f1;
+                --bg-tertiary: #f1ebe0;
+                --text-primary: #333333;
+                --text-secondary: #6c757d;
+                --text-tertiary: #495057;
+                --border-color: #ece4d6;
+                --accent-color: #b0554a;
+                --accent-hover: #934539;
+                --header-bg: #33302b;
+                --header-text: #ffffff;
+                --sidebar-bg: #faf7f1;
+                --code-bg: #f5f0e7;
+                --code-text: #8f3d2c;
+                --pre-bg: #fcf9f4;
+                --table-stripe: #faf7f1;
+                --blockquote-bg: #fcf9f4;
+                --shadow: rgba(0, 0, 0, 0.08);
+            }
 
             /* Dark theme */
             [data-theme="dark"] {
@@ -510,6 +536,12 @@
                 background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
                 color: #333333;
                 border-color: #e9ecef;
+            }
+
+            .theme-option[data-theme="warm"] .theme-preview {
+                background: linear-gradient(135deg, #ffffff 0%, #f6efe4 100%);
+                color: #b0554a;
+                border-color: #ece4d6;
             }
 
             .theme-option[data-theme="dark"] .theme-preview {
@@ -953,6 +985,17 @@
             .tree-item.active {
                 background-color: var(--accent-color);
                 color: white;
+            }
+
+            /* Warm theme overrides: the saturated accent fill read too heavy as
+               a selection, so use a lighter, softer warm highlight; and darken
+               the (otherwise too-faint) block-quote text. */
+            [data-theme="warm"] .tree-item.active {
+                background-color: #f4e2d7;
+                color: #a04a38;
+            }
+            [data-theme="warm"] .markdown-content blockquote {
+                color: #4a453f;
             }
 
             .tree-item.file {
@@ -2273,6 +2316,10 @@
                             <div class="theme-option active" data-theme="light">
                                 <div class="theme-preview">🌕</div>
                                 <div class="theme-name">Light</div>
+                            </div>
+                            <div class="theme-option" data-theme="warm">
+                                <div class="theme-preview">🌅</div>
+                                <div class="theme-name">Warm</div>
                             </div>
                             <div class="theme-option" data-theme="dark">
                                 <div class="theme-preview">🌑</div>
