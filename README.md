@@ -50,6 +50,30 @@
 - **⚡ High-Performance Architecture** - Built with Rust and Axum for low memory usage and fast response times
 - **🎨 Modern UI** - Clean and beautiful user interface with clear information hierarchy and elegant interactions
 
+# 🍴 What This Fork Adds
+
+This is a personal fork ([`PoOnesNerfect/litho-book`](https://github.com/PoOnesNerfect/litho-book)) of the upstream project ([`qbradley/litho-book`](https://github.com/qbradley/litho-book)). It stays a drop-in reader but adds the following on top of upstream:
+
+### Reading & navigation
+- **More themes and display settings** — additional themes (Morandi, Nord, Solarized Light/Dark, Gruvbox, Rosé Pine) beyond light/dark, plus configurable content width and table-of-contents placement.
+- **File-tree entries are real links** — Ctrl/Cmd/middle-click (or "open in new tab") opens a document in a new browser tab; a plain click still navigates in-app.
+- **Document-aware page title** — the browser tab title follows the open document (its `H1`, falling back to the file name).
+- **Partial live-reload** — the file tree is rebuilt only on structural changes, preserving expanded folders, the active file, and scroll position; the current page reloads only when its content actually changed.
+
+### Content rendering
+- **Syntax highlighting for code blocks** — highlight.js is vendored and embedded in the binary (works offline, no CDN), with a theme-aware color palette so token colors adapt to the active theme.
+- **Local images render** — images referenced by relative paths in Markdown are served from the docs directory (via a `/raw` route) and constrained to the content width.
+- **Copy buttons** on fenced code blocks and inline code, pinned in place when a block scrolls horizontally.
+
+### Export
+- **Export the current page as standalone HTML** — a self-contained file with inlined styles, a full-height left table of contents with scroll-spy, copy buttons, and images embedded as base64.
+- **Export the current page as a Word (`.docx`) document** — built client-side (the `docx` library is vendored/embedded), mapping headings, lists, tables, code blocks, images, and Mermaid diagrams (rasterized to PNG) into a real Word file so coworkers can comment / track-changes.
+
+### Layout fixes
+- Left-aligned paragraphs, tables kept within the content width, and the sidebar file tree no longer clips its last entry.
+
+> Note: some additions vendor their assets (highlight.js, the `docx` library) embedded in the binary and served from `/vendor/*`, so they work without a network connection. Mermaid and web fonts are still loaded from a CDN by the live app.
+
 # 🧠 How it Works
 
 **Litho Book** serves as an important component of the [**Litho (deepwiki-rs)**](https://github.com/sopaco/deepwiki-rs) ecosystem, focusing on providing excellent documentation reading experience:
@@ -245,6 +269,9 @@ Litho Book provides the following API endpoints to support dynamic frontend func
 | `/api/tree` | GET | Get the tree structure of the entire document directory | - |
 | `/api/search` | GET | Search files based on a query keyword | `q=<query>` |
 | `/api/stats` | GET | Get statistics of the document library (e.g., number of files, size, etc.) | - |
+| `/raw/*path` | GET | Serve raw files (images, etc.) referenced by Markdown from the docs directory | - |
+| `/vendor/highlight.min.js` | GET | Vendored highlight.js bundle (embedded) for code syntax highlighting | - |
+| `/vendor/docx.min.js` | GET | Vendored `docx` library (embedded) for client-side Word export | - |
 | `/health` | GET | Health check | - |
 
 # 🔧 Development Guide

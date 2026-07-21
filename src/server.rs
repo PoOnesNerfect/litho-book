@@ -1,7 +1,7 @@
 use axum::{
     Router,
     extract::{Query, State},
-    http::StatusCode,
+    http::{StatusCode, header},
     response::{Html, Json, Sse, sse::Event},
     routing::{get, post},
 };
@@ -135,6 +135,13 @@ pub fn create_router(
         .route("/api/stats", get(stats_handler))
         .route("/api/chat", post(chat_stream_handler))
         .route("/health", get(health_handler))
+        // Vendored highlight.js, embedded in the binary so syntax highlighting
+        // works regardless of the process working directory. The /assets
+        // ServeDir below is relative to CWD and is unavailable when litho is run
+        // from an arbitrary docs directory.
+        .route("/vendor/highlight.min.js", get(highlight_js_handler))
+        // Vendored `docx` library for client-side Word export (lazy-loaded).
+        .route("/vendor/docx.min.js", get(docx_js_handler))
         // Serve raw files (images, etc.) referenced by markdown out of the docs
         // directory. Relative image URLs are rewritten to /raw/... at render
         // time (see DocumentTree::render_markdown). ServeDir prevents path
@@ -364,6 +371,27 @@ async fn health_handler() -> Json<serde_json::Value> {
         "timestamp": chrono::Utc::now().to_rfc3339(),
         "version": env!("CARGO_PKG_VERSION")
     }))
+}
+
+/// Build a JavaScript response for a vendored bundle embedded in the binary.
+/// Embedding (rather than a CDN or the CWD-relative /assets dir) keeps these
+/// assets available offline and independent of the working directory.
+fn vendored_js(body: &'static str) -> impl axum::response::IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "application/javascript; charset=utf-8")],
+        body,
+    )
+}
+
+/// Serve the vendored highlight.js bundle used for code syntax highlighting.
+async fn highlight_js_handler() -> impl axum::response::IntoResponse {
+    vendored_js(include_str!("../assets/highlight.min.js"))
+}
+
+/// Serve the vendored `docx` library used by the client-side "Word" export
+/// (lazy-loaded on first export, so it doesn't bloat initial page load).
+async fn docx_js_handler() -> impl axum::response::IntoResponse {
+    vendored_js(include_str!("../assets/docx.min.js"))
 }
 
 /// AI assistant streaming chat handler.

@@ -53,6 +53,19 @@
                 --blockquote-bg: #f8f9fa;
                 --shadow: rgba(0, 0, 0, 0.1);
 
+                /* Syntax highlighting palette (light). Token colors are driven
+                   by CSS variables so a single hljs class->variable mapping
+                   adapts to every theme; dark themes override these below. */
+                --hl-comment: #6a737d;
+                --hl-keyword: #d73a49;
+                --hl-string: #032f62;
+                --hl-number: #005cc5;
+                --hl-title: #6f42c1;
+                --hl-built_in: #e36209;
+                --hl-type: #22863a;
+                --hl-attr: #005cc5;
+                --hl-meta: #6a737d;
+
                 /* Font settings */
                 --font-family:
                     "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -63,6 +76,43 @@
                 /* Layout settings */
                 --content-width: 100%;
             }
+
+            /* Syntax highlighting palette (dark) -- applied to every dark theme.
+               Same variables as the light palette in :root, so the hljs mapping
+               below needs no per-theme duplication. */
+            [data-theme="dark"],
+            [data-theme="nord"],
+            [data-theme="solarized-dark"],
+            [data-theme="gruvbox"],
+            [data-theme="rose-pine"] {
+                --hl-comment: #8b949e;
+                --hl-keyword: #ff7b72;
+                --hl-string: #a5d6ff;
+                --hl-number: #79c0ff;
+                --hl-title: #d2a8ff;
+                --hl-built_in: #ffa657;
+                --hl-type: #7ee787;
+                --hl-attr: #79c0ff;
+                --hl-meta: #8b949e;
+            }
+
+            /* highlight.js token classes -> palette variables. Background stays
+               the theme's --pre-bg (set on .markdown-content pre); .hljs only
+               colors tokens. Baked into exported files since it lives in a
+               <style> the export copies, and export sets data-theme on <html>. */
+            .markdown-content pre code.hljs { background: transparent; padding: 0; color: var(--text-primary); }
+            .markdown-content .hljs-comment, .markdown-content .hljs-quote { color: var(--hl-comment); font-style: italic; }
+            .markdown-content .hljs-keyword, .markdown-content .hljs-selector-tag, .markdown-content .hljs-subst, .markdown-content .hljs-operator { color: var(--hl-keyword); }
+            .markdown-content .hljs-string, .markdown-content .hljs-regexp, .markdown-content .hljs-addition { color: var(--hl-string); }
+            .markdown-content .hljs-number, .markdown-content .hljs-literal { color: var(--hl-number); }
+            .markdown-content .hljs-title, .markdown-content .hljs-title.function_, .markdown-content .hljs-title.class_, .markdown-content .hljs-section { color: var(--hl-title); }
+            .markdown-content .hljs-built_in, .markdown-content .hljs-symbol, .markdown-content .hljs-bullet { color: var(--hl-built_in); }
+            .markdown-content .hljs-type, .markdown-content .hljs-tag, .markdown-content .hljs-name { color: var(--hl-type); }
+            .markdown-content .hljs-attr, .markdown-content .hljs-attribute, .markdown-content .hljs-variable, .markdown-content .hljs-template-variable { color: var(--hl-attr); }
+            .markdown-content .hljs-meta, .markdown-content .hljs-doctag { color: var(--hl-meta); }
+            .markdown-content .hljs-deletion { color: var(--hl-keyword); }
+            .markdown-content .hljs-emphasis { font-style: italic; }
+            .markdown-content .hljs-strong { font-weight: 600; }
 
             /* Dark theme */
             [data-theme="dark"] {
@@ -893,6 +943,7 @@
                 transition: all 0.2s ease;
                 font-size: calc(0.9rem * var(--font-size-scale));
                 color: var(--text-primary);
+                text-decoration: none;
             }
 
             .tree-item:hover {
@@ -2597,6 +2648,10 @@
         <!-- Load Mermaid.js -->
         <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
 
+        <!-- Syntax highlighting (vendored locally so it works offline). Runs on
+             fenced code blocks after each document renders; see loadFile(). -->
+        <script src="/vendor/highlight.min.js"></script>
+
         <script>
             // Settings management
             const Settings = {
@@ -3807,7 +3862,10 @@
                 const nodeDiv = document.createElement('div');
                 nodeDiv.className = 'tree-node';
 
-                const itemDiv = document.createElement('div');
+                // File rows are real <a> elements so ctrl/cmd/middle-click (and
+                // "open in new tab") work natively -- the browser needs an href
+                // to offer that. Folders stay <div> (they only expand/collapse).
+                const itemDiv = document.createElement(node.is_file ? 'a' : 'div');
                 itemDiv.className = 'tree-item';
 
                 const iconSpan = document.createElement('span');
@@ -3820,7 +3878,16 @@
                     iconSpan.className += ' file-icon';
                     itemDiv.className += ' file';
                     itemDiv.dataset.path = node.path;
-                    itemDiv.addEventListener('click', () => loadFile(node.path));
+                    // Deep-link matching the app's ?file= scheme so a new tab
+                    // opens straight to this document.
+                    itemDiv.href = '?file=' + encodeURIComponent(node.path);
+                    itemDiv.addEventListener('click', (e) => {
+                        // Let the browser handle new-tab/window intents; only
+                        // hijack a plain left-click for in-app navigation.
+                        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+                        e.preventDefault();
+                        loadFile(node.path);
+                    });
                 } else {
                     iconSpan.className += ' folder-icon';
                     itemDiv.dataset.path = node.path;
@@ -3940,8 +4007,14 @@
                 const breadcrumb = document.getElementById('breadcrumb');
                 if (!filePath) {
                     breadcrumb.innerHTML = '';
+                    document.title = 'Litho Book';
                     return;
                 }
+
+                // Reflect the current page in the tab/window title. Start from
+                // the file name (stripped of .md); loadFile() refines this to the
+                // document's H1 once the content is in the DOM.
+                document.title = filePath.split('/').pop().replace(/\.md$/i, '') + ' \u00b7 Litho Book';
 
                 const parts = filePath.split('/');
                 const breadcrumbHtml = parts.map((part, index) => {
@@ -4006,6 +4079,14 @@
 
                     // Render Markdown content
                     contentContainer.innerHTML = `<div class="markdown-content">${data.html}</div>`;
+
+                    // Refine the tab title to the document's H1 now that the
+                    // content is in the DOM (updateBreadcrumb set a file-name
+                    // fallback above).
+                    const docHeading = contentContainer.querySelector('h1');
+                    if (docHeading && docHeading.textContent.trim()) {
+                        document.title = docHeading.textContent.trim() + ' \u00b7 Litho Book';
+                    }
 
                     // Render Mermaid diagrams
                     const mermaidElements = contentContainer.querySelectorAll('code.language-mermaid, pre code.language-mermaid');
@@ -4123,6 +4204,18 @@
                         }
                     }
 
+                    // Syntax-highlight fenced code blocks. Mermaid blocks were
+                    // already replaced with diagrams above, so they're skipped.
+                    // hljs is vendored under /assets; guard in case it failed to
+                    // load so rendering still succeeds.
+                    if (window.hljs) {
+                        contentContainer.querySelectorAll('pre code').forEach((block) => {
+                            if (block.classList.contains('language-mermaid')) return;
+                            if (block.dataset.highlighted) return;
+                            try { window.hljs.highlightElement(block); } catch (e) { /* leave code as-is */ }
+                        });
+                    }
+
                     // Add "copy" buttons to code blocks and inline code
                     addCodeCopyButtons(contentContainer);
 
@@ -4203,6 +4296,11 @@
                     .code-copy-btn:hover { color: var(--text-primary, #24292f); }
                     .code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }
                     .code-copy-btn svg { flex: 0 0 auto; }
+
+                    /* Block quotes: same top-right hover-reveal copy button as
+                       code blocks (reuses .code-copy-btn). */
+                    .blockquote-wrapper { position: relative; }
+                    .blockquote-wrapper:hover .code-copy-btn { opacity: 1; }
 
                     /* Inline code: keep each snippet whole (never split across
                        lines) by wrapping it in an inline-block; a hover-reveal
@@ -4367,6 +4465,42 @@
                         if (ok) flashCopied(btn, null);
                     });
                     wrap.appendChild(btn);
+                });
+
+                // Block quotes: a top-right hover-reveal copy button, mirroring
+                // code blocks. Only the outermost blockquote is enhanced.
+                container.querySelectorAll('blockquote').forEach(bq => {
+                    if (bq.dataset.copyEnhanced) return;
+                    if (bq.parentNode && bq.parentNode.closest && bq.parentNode.closest('blockquote')) return;
+                    bq.dataset.copyEnhanced = '1';
+
+                    const parent = bq.parentNode;
+                    let wrapper = bq.parentElement;
+                    if (!wrapper || !wrapper.classList.contains('blockquote-wrapper')) {
+                        wrapper = document.createElement('div');
+                        wrapper.className = 'blockquote-wrapper';
+                        if (parent) {
+                            parent.insertBefore(wrapper, bq);
+                            wrapper.appendChild(bq);
+                        }
+                    }
+
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'code-copy-btn';
+                    btn.setAttribute('aria-label', 'Copy quote to clipboard');
+                    btn.innerHTML = CODE_COPY_ICON;
+                    const label = document.createElement('span');
+                    label.textContent = 'Copy';
+                    btn.appendChild(label);
+
+                    btn.addEventListener('click', async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        const ok = await copyTextToClipboard(bq.innerText || bq.textContent);
+                        if (ok) flashCopied(btn, label);
+                    });
+                    wrapper.appendChild(btn);
                 });
             }
 
@@ -6560,6 +6694,66 @@
                 border-color: var(--text-secondary, #57606a);
             }
             .export-html-btn svg { width: 1em; height: 1em; flex: 0 0 auto; }
+
+            /* Export dropdown (HTML / PDF / Word). */
+            .export-menu { position: relative; margin-left: auto; }
+            .export-menu > .export-html-btn { margin-left: 0; }
+            .export-menu-caret { transition: transform 0.12s ease; }
+            .export-menu-list.open ~ .export-html-btn .export-menu-caret,
+            .export-menu-list.open .export-menu-caret { transform: rotate(180deg); }
+            .export-menu-list {
+                position: absolute;
+                right: 0;
+                top: calc(100% + 4px);
+                min-width: 150px;
+                background: var(--bg-primary, #ffffff);
+                border: 1px solid var(--border-color, #d0d7de);
+                border-radius: 6px;
+                box-shadow: 0 6px 18px var(--shadow, rgba(0, 0, 0, 0.15));
+                padding: 4px;
+                z-index: 1200;
+                display: none;
+            }
+            .export-menu-list.open { display: block; }
+            .export-menu-item {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                width: 100%;
+                padding: 0.4rem 0.6rem;
+                font-size: 0.8rem;
+                color: var(--text-secondary, #57606a);
+                background: none;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                text-align: left;
+                white-space: nowrap;
+            }
+            .export-menu-item:hover { background: var(--bg-tertiary, #f0f1f3); color: var(--text-primary, #24292f); }
+            .export-menu-item svg { width: 1em; height: 1em; flex: 0 0 auto; }
+
+            @media print {
+                /* "PDF" export uses the browser's Save as PDF. Hide everything
+                   except the rendered document and give it the full page width.
+                   The sidebar must be display:none (not just hidden) -- with
+                   only visibility:hidden its 320px column still occupies layout
+                   and narrows the printed content. */
+                body * { visibility: hidden !important; }
+                #content-container, #content-container * { visibility: visible !important; }
+                .header, .content-header, .sidebar, .export-menu { display: none !important; }
+                .container { display: block !important; height: auto !important; }
+                .content { overflow: visible !important; height: auto !important; position: static !important; }
+                #content-container {
+                    position: static !important;
+                    width: 100% !important;
+                    padding: 0 !important;
+                }
+                body, html { overflow: visible !important; height: auto !important; background: #fff !important; }
+                .markdown-content { max-width: none !important; margin: 0 !important; }
+                .markdown-content pre, .markdown-content table, .markdown-content img,
+                .markdown-content .mermaid { break-inside: avoid; page-break-inside: avoid; }
+            }
         </style>
         <script>
             (function () {
@@ -6605,6 +6799,9 @@
                     '.code-block-wrapper:hover .code-copy-btn, .code-copy-btn:focus-visible { opacity: 1; }',
                     '.code-copy-btn:hover { color: var(--text-primary, #24292f); }',
                     '.code-copy-btn.copied { color: #1a7f37; border-color: #1a7f37; }',
+                    // Block quotes: same top-right hover-reveal copy button.
+                    '.blockquote-wrapper { position: relative; }',
+                    '.blockquote-wrapper:hover .code-copy-btn { opacity: 1; }',
                     // Inline code: keep each snippet whole (inline-block + nowrap);
                     // a hover-reveal copy button sits at the wrapper's right edge.
                     '.inline-code-wrapper { position: relative; display: inline-block; white-space: nowrap; }',
@@ -6637,6 +6834,8 @@
                     // Inline code: wrap each snippet so a CSS-hover copy button can
                     // sit at its right edge; no mouse/scroll tracking needed.
                     'root.querySelectorAll("code").forEach(function(code){if(code.closest("pre"))return;if(code.dataset.inlineCopy)return;var parent=code.parentNode;if(!parent)return;if(parent.classList&&parent.classList.contains("inline-code-wrapper"))return;code.dataset.inlineCopy="1";var wrap=document.createElement("span");wrap.className="inline-code-wrapper";parent.insertBefore(wrap,code);wrap.appendChild(code);var b=document.createElement("button");b.type="button";b.className="inline-code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,null);});});wrap.appendChild(b);});',
+                    // Block quotes: top-right copy button, same as code blocks.
+                    'root.querySelectorAll("blockquote").forEach(function(bq){if(bq.dataset.copyEnhanced)return;if(bq.parentNode&&bq.parentNode.closest&&bq.parentNode.closest("blockquote"))return;bq.dataset.copyEnhanced="1";var parent=bq.parentNode;var wrap=bq.parentElement;if(!wrap||!wrap.classList.contains("blockquote-wrapper")){wrap=document.createElement("div");wrap.className="blockquote-wrapper";if(parent){parent.insertBefore(wrap,bq);wrap.appendChild(bq);}}var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy quote");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(bq.innerText||bq.textContent).then(function(ok){if(ok)flash(b,l);});});wrap.appendChild(b);});',
                     '}',
                     // Scroll-spy: highlight the TOC entry for the section currently
                     // at the top of the viewport. The exported page scrolls on the
@@ -6668,6 +6867,38 @@
                     });
                 }
 
+                // The document title used for export: the page's first H1, or the
+                // current file name (sans .md), or "Document". `root` is where to
+                // look for the H1 (the live content or a clone).
+                function exportDocTitle(root) {
+                    var h1 = root && root.querySelector('h1');
+                    return (h1 ? h1.textContent
+                        : ((typeof currentFile === 'string' && currentFile)
+                            ? currentFile.split('/').pop().replace(/\.md$/i, '') : 'Document')).trim();
+                }
+
+                // Slugify a title into a safe download file name (no extension).
+                function exportFileName(title) {
+                    return (title || 'document').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'document';
+                }
+
+                // Trigger a browser download of `blob` as `filename`.
+                function triggerDownload(blob, filename) {
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = filename;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+                }
+
+                // Show a toast if the app provides one (no-op otherwise).
+                function toast(message, kind) {
+                    if (typeof showToast === 'function') { showToast(message, kind); }
+                }
+
                 // Remove copy buttons the live app may have injected, so the
                 // exported file starts clean and its own script re-adds them.
                 function stripLiveCopyButtons(root) {
@@ -6679,6 +6910,10 @@
                     root.querySelectorAll('.code-block-wrapper').forEach(function (w) {
                         var pre = w.querySelector('pre');
                         if (pre) { w.replaceWith(pre); }
+                    });
+                    root.querySelectorAll('.blockquote-wrapper').forEach(function (w) {
+                        var bq = w.querySelector('blockquote');
+                        if (bq) { w.replaceWith(bq); }
                     });
                     root.querySelectorAll('[data-copy-enhanced]').forEach(function (el) { el.removeAttribute('data-copy-enhanced'); });
                     root.querySelectorAll('[data-inline-copy]').forEach(function (el) { el.removeAttribute('data-inline-copy'); });
@@ -6737,10 +6972,7 @@
                     var tocEl = document.getElementById('tocContent');
                     var tocHtml = (tocEl && tocEl.children.length) ? tocEl.innerHTML : '';
 
-                    var titleEl = contentClone.querySelector('h1');
-                    var docTitle = (titleEl ? titleEl.textContent
-                        : ((typeof currentFile === 'string' && currentFile)
-                            ? currentFile.split('/').pop().replace(/\.md$/i, '') : 'Document')).trim();
+                    var docTitle = exportDocTitle(contentClone);
 
                     var rootStyle = '--content-width:' + contentWidth + ';--font-size-scale:' + fontSizeScale + ';';
                     if (fontFamily) { rootStyle += '--font-family:' + fontFamily + ';'; }
@@ -6773,33 +7005,318 @@
                 async function downloadExport() {
                     var result = await buildExportDocument();
                     if (!result) {
-                        if (typeof showToast === 'function') { showToast('Open a document first', 'error'); }
+                        toast('Open a document first', 'error');
                         return;
                     }
-                    var safeName = (result.docTitle || 'document').toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'document';
+                    var safeName = exportFileName(result.docTitle);
                     var blob = new Blob([result.html], { type: 'text/html;charset=utf-8' });
-                    var url = URL.createObjectURL(blob);
-                    var a = document.createElement('a');
-                    a.href = url;
-                    a.download = safeName + '.html';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
-                    if (typeof showToast === 'function') { showToast('Exported standalone HTML'); }
+                    triggerDownload(blob, safeName + '.html');
+                    toast('Exported standalone HTML');
+                }
+
+                // ---- Word (.docx) export ----------------------------------
+                // Builds a real .docx from the rendered DOM using the vendored
+                // `docx` library (lazy-loaded on first use). A real Word file
+                // lets coworkers comment / track-changes. Mermaid diagrams
+                // (already rendered to SVG in the page) are rasterized to PNG;
+                // other images are fetched from /raw and embedded.
+                function loadDocxLib() {
+                    return new Promise(function (resolve, reject) {
+                        if (window.docx) { resolve(window.docx); return; }
+                        var s = document.createElement('script');
+                        s.src = '/vendor/docx.min.js';
+                        s.onload = function () { window.docx ? resolve(window.docx) : reject(new Error('docx unavailable')); };
+                        s.onerror = function () { reject(new Error('failed to load docx library')); };
+                        document.head.appendChild(s);
+                    });
+                }
+
+                function dataUriToBytes(src) {
+                    var comma = src.indexOf(',');
+                    var meta = src.slice(5, comma);
+                    var body = src.slice(comma + 1);
+                    var type = (meta.split(';')[0]) || 'image/png';
+                    var arr;
+                    if (/;base64/i.test(meta)) {
+                        var bin = atob(body);
+                        arr = new Uint8Array(bin.length);
+                        for (var i = 0; i < bin.length; i++) { arr[i] = bin.charCodeAt(i); }
+                    } else {
+                        arr = new TextEncoder().encode(decodeURIComponent(body));
+                    }
+                    return { data: arr, type: type };
+                }
+
+                async function imgElementToImage(img) {
+                    var src = img.getAttribute('src') || '';
+                    var bytes;
+                    if (src.indexOf('data:') === 0) {
+                        bytes = dataUriToBytes(src);
+                    } else {
+                        var resp = await fetch(src);
+                        if (!resp.ok) { throw new Error('image fetch failed'); }
+                        var buf = await resp.arrayBuffer();
+                        bytes = { data: new Uint8Array(buf), type: (resp.headers.get('content-type') || 'image/png').split(';')[0] };
+                    }
+                    return { data: bytes.data, type: bytes.type, w: (img.naturalWidth || img.width || 600), h: (img.naturalHeight || img.height || 400) };
+                }
+
+                async function svgToImage(svg) {
+                    var vb = svg.viewBox && svg.viewBox.baseVal;
+                    var w = (vb && vb.width) || svg.clientWidth || 800;
+                    var h = (vb && vb.height) || svg.clientHeight || 600;
+                    var xml = new XMLSerializer().serializeToString(svg);
+                    var url = 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(xml)));
+                    var image = new Image();
+                    await new Promise(function (res, rej) { image.onload = res; image.onerror = rej; image.src = url; });
+                    var scale = 2;
+                    var canvas = document.createElement('canvas');
+                    canvas.width = Math.round(w * scale);
+                    canvas.height = Math.round(h * scale);
+                    var ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                    var blob = await new Promise(function (res) { canvas.toBlob(res, 'image/png'); });
+                    var buf = await blob.arrayBuffer();
+                    return { data: new Uint8Array(buf), type: 'image/png', w: w, h: h };
+                }
+
+                function imageRunFor(docx, image) {
+                    var MAX_W = 600;
+                    var w = image.w, h = image.h;
+                    if (w > MAX_W) { h = Math.round(h * MAX_W / w); w = MAX_W; }
+                    var typeMap = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/gif': 'gif', 'image/bmp': 'bmp' };
+                    return new docx.ImageRun({ data: image.data, type: typeMap[image.type] || 'png', transformation: { width: w, height: h } });
+                }
+
+                function inlineRuns(docx, node, style) {
+                    style = style || {};
+                    var runs = [];
+                    node.childNodes.forEach(function (child) {
+                        if (child.nodeType === 3) {
+                            var t = child.textContent;
+                            if (t) { runs.push(new docx.TextRun({ text: t, bold: style.bold, italics: style.italics, font: style.code ? 'Consolas' : undefined, color: style.code ? '9A3E38' : undefined })); }
+                        } else if (child.nodeType === 1) {
+                            var tag = child.tagName.toLowerCase();
+                            if (tag === 'strong' || tag === 'b') { runs = runs.concat(inlineRuns(docx, child, Object.assign({}, style, { bold: true }))); }
+                            else if (tag === 'em' || tag === 'i') { runs = runs.concat(inlineRuns(docx, child, Object.assign({}, style, { italics: true }))); }
+                            else if (tag === 'code') { runs.push(new docx.TextRun({ text: child.textContent, font: 'Consolas', color: '9A3E38' })); }
+                            else if (tag === 'br') { runs.push(new docx.TextRun({ break: 1 })); }
+                            else if (tag === 'a') {
+                                var href = child.getAttribute('href') || '';
+                                if (/^https?:/i.test(href)) {
+                                    runs.push(new docx.ExternalHyperlink({ children: [new docx.TextRun({ text: child.textContent, style: 'Hyperlink' })], link: href }));
+                                } else { runs = runs.concat(inlineRuns(docx, child, style)); }
+                            }
+                            else { runs = runs.concat(inlineRuns(docx, child, style)); }
+                        }
+                    });
+                    return runs;
+                }
+
+                async function liToBlocks(docx, li, out, ctx) {
+                    var inlineHost = document.createElement('span');
+                    var nested = [];
+                    li.childNodes.forEach(function (c) {
+                        var t = c.nodeType === 1 ? c.tagName.toLowerCase() : '';
+                        if (t === 'ul' || t === 'ol') { nested.push(c); }
+                        else { inlineHost.appendChild(c.cloneNode(true)); }
+                    });
+                    var para = { children: inlineRuns(docx, inlineHost) };
+                    if (ctx.type === 'ol') { para.numbering = { reference: 'litho-ol', level: Math.min(ctx.level, 3) }; }
+                    else { para.bullet = { level: Math.min(ctx.level, 3) }; }
+                    out.push(new docx.Paragraph(para));
+                    for (var n = 0; n < nested.length; n++) { await blocksFromNode(docx, nested[n], out, ctx); }
+                }
+
+                async function tableToDocx(docx, table) {
+                    var rows = [];
+                    table.querySelectorAll('tr').forEach(function (tr) {
+                        var cells = [];
+                        tr.querySelectorAll('th,td').forEach(function (td) {
+                            var isHead = td.tagName.toLowerCase() === 'th';
+                            cells.push(new docx.TableCell({
+                                children: [new docx.Paragraph({ children: inlineRuns(docx, td, { bold: isHead }) })],
+                                shading: isHead ? { type: docx.ShadingType.CLEAR, fill: 'EFEFEF' } : undefined
+                            }));
+                        });
+                        if (cells.length) { rows.push(new docx.TableRow({ children: cells })); }
+                    });
+                    return new docx.Table({ width: { size: 100, type: docx.WidthType.PERCENTAGE }, rows: rows });
+                }
+
+                async function blocksFromNode(docx, node, out, listCtx) {
+                    if (!node || node.nodeType !== 1) { return; }
+                    var tag = node.tagName.toLowerCase();
+                    var HL = docx.HeadingLevel;
+                    var headings = { h1: HL.HEADING_1, h2: HL.HEADING_2, h3: HL.HEADING_3, h4: HL.HEADING_4, h5: HL.HEADING_5, h6: HL.HEADING_6 };
+                    if (headings[tag]) { out.push(new docx.Paragraph({ heading: headings[tag], children: inlineRuns(docx, node) })); return; }
+                    switch (tag) {
+                        case 'p': {
+                            var pImgs = node.querySelectorAll(':scope > img');
+                            if (pImgs.length && node.textContent.trim() === '') {
+                                for (var pi = 0; pi < pImgs.length; pi++) { try { out.push(new docx.Paragraph({ children: [imageRunFor(docx, await imgElementToImage(pImgs[pi]))] })); } catch (e) { } }
+                            } else {
+                                out.push(new docx.Paragraph({ children: inlineRuns(docx, node) }));
+                            }
+                            break;
+                        }
+                        case 'img': { try { out.push(new docx.Paragraph({ children: [imageRunFor(docx, await imgElementToImage(node))] })); } catch (e) { } break; }
+                        case 'ul':
+                        case 'ol': {
+                            var lvl = listCtx ? listCtx.level + 1 : 0;
+                            for (var li = 0; li < node.children.length; li++) {
+                                if (node.children[li].tagName.toLowerCase() === 'li') { await liToBlocks(docx, node.children[li], out, { type: tag, level: lvl }); }
+                            }
+                            break;
+                        }
+                        case 'blockquote': {
+                            for (var qi = 0; qi < node.childNodes.length; qi++) {
+                                var qn = node.childNodes[qi];
+                                if (qn.nodeType === 1 && qn.tagName.toLowerCase() === 'p') { out.push(new docx.Paragraph({ indent: { left: 480 }, children: inlineRuns(docx, qn, { italics: true }) })); }
+                                else if (qn.nodeType === 1) { await blocksFromNode(docx, qn, out, listCtx); }
+                            }
+                            break;
+                        }
+                        case 'pre': {
+                            var codeEl = node.querySelector('code') || node;
+                            (codeEl.textContent.replace(/\n$/, '')).split('\n').forEach(function (line) {
+                                out.push(new docx.Paragraph({
+                                    shading: { type: docx.ShadingType.CLEAR, fill: 'F2F2F2' },
+                                    spacing: { after: 0, before: 0, line: 240 },
+                                    children: [new docx.TextRun({ text: line || ' ', font: 'Consolas', size: 18 })]
+                                }));
+                            });
+                            out.push(new docx.Paragraph({ text: '' }));
+                            break;
+                        }
+                        case 'table': { out.push(await tableToDocx(docx, node)); break; }
+                        case 'hr': { out.push(new docx.Paragraph({ border: { bottom: { color: 'CCCCCC', space: 1, style: docx.BorderStyle.SINGLE, size: 6 } }, children: [] })); break; }
+                        case 'div': {
+                            if (node.classList && node.classList.contains('mermaid')) {
+                                var svg = node.querySelector('svg');
+                                if (svg) { try { out.push(new docx.Paragraph({ children: [imageRunFor(docx, await svgToImage(svg))] })); } catch (e) { } }
+                                break;
+                            }
+                            for (var di = 0; di < node.children.length; di++) { await blocksFromNode(docx, node.children[di], out, listCtx); }
+                            break;
+                        }
+                        default: {
+                            if (node.children && node.children.length) {
+                                for (var ci = 0; ci < node.children.length; ci++) { await blocksFromNode(docx, node.children[ci], out, listCtx); }
+                            } else if (node.textContent && node.textContent.trim()) {
+                                out.push(new docx.Paragraph({ children: inlineRuns(docx, node) }));
+                            }
+                        }
+                    }
+                }
+
+                async function downloadWordExport() {
+                    var contentEl = document.querySelector('.markdown-content');
+                    if (!contentEl) { toast('Open a document first', 'error'); return; }
+                    toast('Building Word document\u2026');
+                    var docx;
+                    try { docx = await loadDocxLib(); } catch (e) { toast('Could not load Word exporter', 'error'); return; }
+
+                    var docTitle = exportDocTitle(contentEl);
+
+                    var blocks = [];
+                    try {
+                        for (var i = 0; i < contentEl.children.length; i++) { await blocksFromNode(docx, contentEl.children[i], blocks, null); }
+                    } catch (e) { console.error('Word export failed:', e); toast('Word export failed', 'error'); return; }
+
+                    var doc = new docx.Document({
+                        styles: {
+                            default: {
+                                // Give the whole document readable line spacing
+                                // (1.15) and space between paragraphs; without
+                                // this Word renders everything single-spaced and
+                                // cramped.
+                                document: {
+                                    run: { size: 22 },
+                                    paragraph: { spacing: { line: 276, after: 160 } }
+                                }
+                            }
+                        },
+                        numbering: {
+                            config: [{
+                                reference: 'litho-ol',
+                                levels: [0, 1, 2, 3].map(function (l) {
+                                    return { level: l, format: 'decimal', text: '%' + (l + 1) + '.', alignment: 'start', style: { paragraph: { indent: { left: 720 * (l + 1), hanging: 360 } } } };
+                                })
+                            }]
+                        },
+                        sections: [{ children: blocks.length ? blocks : [new docx.Paragraph({ text: '' })] }]
+                    });
+
+                    try {
+                        var blob = await docx.Packer.toBlob(doc);
+                        triggerDownload(blob, exportFileName(docTitle) + '.docx');
+                        toast('Exported Word document');
+                    } catch (e) { console.error('Word packaging failed:', e); toast('Word export failed', 'error'); }
+                }
+
+                // PDF export via the browser's print-to-PDF. An @media print
+                // stylesheet (see #export-ui-styles) hides the app shell and
+                // prints only the rendered document.
+                function downloadPdfExport() {
+                    if (!document.querySelector('.markdown-content')) {
+                        toast('Open a document first', 'error');
+                        return;
+                    }
+                    window.print();
+                }
+
+                function runExport(fmt) {
+                    if (fmt === 'html') { downloadExport(); }
+                    else if (fmt === 'pdf') { downloadPdfExport(); }
+                    else if (fmt === 'docx') { downloadWordExport(); }
                 }
 
                 function injectExportButton() {
                     var header = document.querySelector('.content-header');
-                    if (!header || header.querySelector('.export-html-btn')) { return; }
+                    if (!header || header.querySelector('.export-menu')) { return; }
+
+                    var menu = document.createElement('div');
+                    menu.className = 'export-menu';
+
                     var btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'export-html-btn';
-                    btn.title = 'Export this page as a standalone HTML file';
-                    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M8 1.5v8M8 9.5 5 6.5M8 9.5l3-3M2.5 11v2A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5v-2"/></svg><span>Export</span>';
-                    btn.addEventListener('click', downloadExport);
-                    header.appendChild(btn);
+                    btn.title = 'Export this page';
+                    btn.setAttribute('aria-haspopup', 'true');
+                    btn.setAttribute('aria-expanded', 'false');
+                    btn.innerHTML = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M8 1.5v8M8 9.5 5 6.5M8 9.5l3-3M2.5 11v2A1.5 1.5 0 0 0 4 14.5h8a1.5 1.5 0 0 0 1.5-1.5v-2"/></svg><span>Export</span><svg class="export-menu-caret" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>';
+
+                    var list = document.createElement('div');
+                    list.className = 'export-menu-list';
+                    [
+                        { fmt: 'html', label: 'HTML' },
+                        { fmt: 'pdf', label: 'PDF' },
+                        { fmt: 'docx', label: 'Word (.docx)' }
+                    ].forEach(function (it) {
+                        var mi = document.createElement('button');
+                        mi.type = 'button';
+                        mi.className = 'export-menu-item';
+                        mi.textContent = it.label;
+                        mi.addEventListener('click', function () { closeMenu(); runExport(it.fmt); });
+                        list.appendChild(mi);
+                    });
+
+                    function closeMenu() { list.classList.remove('open'); btn.setAttribute('aria-expanded', 'false'); }
+                    function toggleMenu(e) {
+                        e.stopPropagation();
+                        var open = list.classList.toggle('open');
+                        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    }
+                    btn.addEventListener('click', toggleMenu);
+                    document.addEventListener('click', function (e) { if (!menu.contains(e.target)) { closeMenu(); } });
+                    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeMenu(); } });
+
+                    menu.appendChild(btn);
+                    menu.appendChild(list);
+                    header.appendChild(menu);
                 }
 
                 if (document.readyState === 'loading') {
