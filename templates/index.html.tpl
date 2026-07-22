@@ -7165,6 +7165,14 @@
                     return new docx.ImageRun({ data: image.data, type: typeMap[image.type] || 'png', transformation: { width: w, height: h } });
                 }
 
+                // Copy buttons injected by the live app (see addCodeCopyButtons)
+                // are part of the rendered DOM but must be excluded from the
+                // exported document, otherwise their "Copy" labels leak in.
+                function isCopyArtifact(el) {
+                    return !!(el && el.nodeType === 1 && el.classList
+                        && (el.classList.contains('code-copy-btn') || el.classList.contains('inline-code-copy-btn')));
+                }
+
                 function inlineRuns(docx, node, style) {
                     style = style || {};
                     var runs = [];
@@ -7173,6 +7181,7 @@
                             var t = child.textContent;
                             if (t) { runs.push(new docx.TextRun({ text: t, bold: style.bold, italics: style.italics, font: style.code ? 'Consolas' : undefined, color: style.code ? '9A3E38' : undefined })); }
                         } else if (child.nodeType === 1) {
+                            if (isCopyArtifact(child)) { return; }
                             var tag = child.tagName.toLowerCase();
                             if (tag === 'strong' || tag === 'b') { runs = runs.concat(inlineRuns(docx, child, Object.assign({}, style, { bold: true }))); }
                             else if (tag === 'em' || tag === 'i') { runs = runs.concat(inlineRuns(docx, child, Object.assign({}, style, { italics: true }))); }
@@ -7223,6 +7232,7 @@
 
                 async function blocksFromNode(docx, node, out, listCtx) {
                     if (!node || node.nodeType !== 1) { return; }
+                    if (isCopyArtifact(node)) { return; }
                     var tag = node.tagName.toLowerCase();
                     var HL = docx.HeadingLevel;
                     var headings = { h1: HL.HEADING_1, h2: HL.HEADING_2, h3: HL.HEADING_3, h4: HL.HEADING_4, h5: HL.HEADING_5, h6: HL.HEADING_6 };
