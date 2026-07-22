@@ -4440,6 +4440,30 @@
                 }, 1200);
             }
 
+            // Plain-text of a block quote for copying. Built from a clone rather
+            // than bq.innerText because the injected inline-code copy wrappers
+            // are display:inline-block, which makes innerText insert a stray line
+            // break after every inline `code` span (chopping the paragraph). We
+            // strip the copy-button artifacts, unwrap the code wrappers so their
+            // text flows inline, then join block children with blank lines.
+            function blockquoteCopyText(bq) {
+                const clone = bq.cloneNode(true);
+                clone.querySelectorAll('.inline-code-copy-btn, .code-copy-btn').forEach(b => b.remove());
+                clone.querySelectorAll('.inline-code-wrapper').forEach(w => {
+                    const code = w.querySelector('code');
+                    if (code) w.replaceWith(code);
+                });
+                clone.querySelectorAll('.code-block-wrapper').forEach(w => {
+                    const pre = w.querySelector('pre');
+                    if (pre) w.replaceWith(pre);
+                });
+                const blocks = clone.querySelectorAll(':scope > p, :scope > pre, :scope > blockquote, :scope > ul, :scope > ol');
+                if (blocks.length) {
+                    return Array.from(blocks).map(el => el.textContent.trim()).filter(Boolean).join('\n\n');
+                }
+                return clone.textContent.trim();
+            }
+
             // Adds hover-reveal "copy" buttons to fenced code blocks (<pre>) and
             // inline code (<code>) inside the given container.
             function addCodeCopyButtons(container) {
@@ -4544,7 +4568,7 @@
                     btn.addEventListener('click', async (e) => {
                         e.preventDefault();
                         e.stopPropagation();
-                        const ok = await copyTextToClipboard(bq.innerText || bq.textContent);
+                        const ok = await copyTextToClipboard(blockquoteCopyText(bq));
                         if (ok) flashCopied(btn, label);
                     });
                     wrapper.appendChild(btn);
@@ -6876,13 +6900,17 @@
                     'function fallback(t){try{var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();var ok=document.execCommand("copy");document.body.removeChild(ta);return ok;}catch(e){return false;}}',
                     'function copyText(t){if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(t).then(function(){return true;}).catch(function(){return fallback(t);});}return Promise.resolve(fallback(t));}',
                     'function flash(b,l){b.classList.add("copied");var p=l?l.textContent:null;if(l)l.textContent="Copied";setTimeout(function(){b.classList.remove("copied");if(l&&p!==null)l.textContent=p;},1200);}',
+                    // Plain-text of a block quote (see blockquoteCopyText in the
+                    // live app): built from a clone so inline-code wrappers don't
+                    // make innerText chop the paragraph at every code span.
+                    'function bqText(bq){var c=bq.cloneNode(true);c.querySelectorAll(".inline-code-copy-btn,.code-copy-btn").forEach(function(b){b.remove();});c.querySelectorAll(".inline-code-wrapper").forEach(function(w){var e=w.querySelector("code");if(e)w.replaceWith(e);});c.querySelectorAll(".code-block-wrapper").forEach(function(w){var p=w.querySelector("pre");if(p)w.replaceWith(p);});var bl=c.querySelectorAll(":scope > p, :scope > pre, :scope > blockquote, :scope > ul, :scope > ol");if(bl.length)return Array.prototype.map.call(bl,function(el){return el.textContent.trim();}).filter(Boolean).join("\\n\\n");return c.textContent.trim();}',
                     'function enhance(root){',
                     'root.querySelectorAll("pre").forEach(function(pre){if(pre.dataset.copyEnhanced)return;pre.dataset.copyEnhanced="1";var code=pre.querySelector("code")||pre;var parent=pre.parentNode;var wrap=pre.parentElement;if(!wrap||!wrap.classList.contains("code-block-wrapper")){wrap=document.createElement("div");wrap.className="code-block-wrapper";if(parent){parent.insertBefore(wrap,pre);wrap.appendChild(pre);}}var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,l);});});wrap.appendChild(b);});',
                     // Inline code: wrap each snippet so a CSS-hover copy button can
                     // sit at its right edge; no mouse/scroll tracking needed.
                     'root.querySelectorAll("code").forEach(function(code){if(code.closest("pre"))return;if(code.dataset.inlineCopy)return;var parent=code.parentNode;if(!parent)return;if(parent.classList&&parent.classList.contains("inline-code-wrapper"))return;code.dataset.inlineCopy="1";var wrap=document.createElement("span");wrap.className="inline-code-wrapper";parent.insertBefore(wrap,code);wrap.appendChild(code);var b=document.createElement("button");b.type="button";b.className="inline-code-copy-btn";b.setAttribute("aria-label","Copy code");b.innerHTML=ICON;b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(code.textContent).then(function(ok){if(ok)flash(b,null);});});wrap.appendChild(b);});',
                     // Block quotes: top-right copy button, same as code blocks.
-                    'root.querySelectorAll("blockquote").forEach(function(bq){if(bq.dataset.copyEnhanced)return;if(bq.parentNode&&bq.parentNode.closest&&bq.parentNode.closest("blockquote"))return;bq.dataset.copyEnhanced="1";var parent=bq.parentNode;var wrap=bq.parentElement;if(!wrap||!wrap.classList.contains("blockquote-wrapper")){wrap=document.createElement("div");wrap.className="blockquote-wrapper";if(parent){parent.insertBefore(wrap,bq);wrap.appendChild(bq);}}var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy quote");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(bq.innerText||bq.textContent).then(function(ok){if(ok)flash(b,l);});});wrap.appendChild(b);});',
+                    'root.querySelectorAll("blockquote").forEach(function(bq){if(bq.dataset.copyEnhanced)return;if(bq.parentNode&&bq.parentNode.closest&&bq.parentNode.closest("blockquote"))return;bq.dataset.copyEnhanced="1";var parent=bq.parentNode;var wrap=bq.parentElement;if(!wrap||!wrap.classList.contains("blockquote-wrapper")){wrap=document.createElement("div");wrap.className="blockquote-wrapper";if(parent){parent.insertBefore(wrap,bq);wrap.appendChild(bq);}}var b=document.createElement("button");b.type="button";b.className="code-copy-btn";b.setAttribute("aria-label","Copy quote");b.innerHTML=ICON;var l=document.createElement("span");l.textContent="Copy";b.appendChild(l);b.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();copyText(bqText(bq)).then(function(ok){if(ok)flash(b,l);});});wrap.appendChild(b);});',
                     '}',
                     // Scroll-spy: highlight the TOC entry for the section currently
                     // at the top of the viewport. The exported page scrolls on the
