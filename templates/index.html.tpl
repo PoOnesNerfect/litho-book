@@ -701,6 +701,23 @@
                 color: white;
             }
 
+            .settings-toggle {
+                display: flex;
+                align-items: center;
+                gap: 0.6rem;
+                cursor: pointer;
+                font-size: calc(0.9rem * var(--font-size-scale));
+                color: var(--text-primary);
+            }
+
+            .settings-toggle input {
+                width: 1rem;
+                height: 1rem;
+                cursor: pointer;
+                accent-color: var(--accent-color);
+                flex: 0 0 auto;
+            }
+
             .reset-btn {
                 background: var(--bg-tertiary);
                 border: 1px solid var(--border-color);
@@ -2481,6 +2498,16 @@
                     </div>
                 </div>
 
+                <div class="settings-section">
+                    <div class="settings-section-title">📁 File tree</div>
+                    <div class="settings-group">
+                        <label class="settings-toggle">
+                            <input type="checkbox" id="hideEmptyDirsToggle" onchange="setHideEmptyDirs(this.checked)" />
+                            <span>Hide folders with no documents</span>
+                        </label>
+                    </div>
+                </div>
+
                 <button class="reset-btn" onclick="resetSettings()">
                     🔄 Restore defaults
                 </button>
@@ -2707,6 +2734,7 @@
                 fontSizeScale: 1,
                 contentWidth: 100,
                 tocMode: 'floating',
+                hideEmptyDirs: true,
 
                 // Font mapping - optimized multilingual font support
                 fontFamilies: {
@@ -2736,6 +2764,7 @@
                         this.fontSizeScale = settings.fontSizeScale || 1;
                         this.contentWidth = settings.contentWidth || 100;
                         this.tocMode = settings.tocMode || 'floating';
+                        this.hideEmptyDirs = settings.hideEmptyDirs !== undefined ? settings.hideEmptyDirs : true;
                     }
                     this.apply();
                 },
@@ -2747,7 +2776,8 @@
                         fontFamily: this.fontFamily,
                         fontSizeScale: this.fontSizeScale,
                         contentWidth: this.contentWidth,
-                        tocMode: this.tocMode
+                        tocMode: this.tocMode,
+                        hideEmptyDirs: this.hideEmptyDirs
                     }));
                 },
 
@@ -2829,6 +2859,12 @@
                         btn.classList.toggle('active', btn.dataset.tocMode === this.tocMode);
                     });
 
+                    // Update "hide empty folders" toggle
+                    const hideEmptyToggle = document.getElementById('hideEmptyDirsToggle');
+                    if (hideEmptyToggle) {
+                        hideEmptyToggle.checked = this.hideEmptyDirs;
+                    }
+
                     // Update font preview
                     const fontPreview = document.getElementById('fontPreview');
                     if (fontPreview) {
@@ -2885,6 +2921,15 @@
                     this.save();
                 },
 
+                // Toggle hiding folders that contain no documents anywhere in
+                // their subtree. Applied in renderTree; re-render the tree here.
+                setHideEmptyDirs(value) {
+                    this.hideEmptyDirs = !!value;
+                    this.apply();
+                    this.save();
+                    if (typeof refreshFileTree === 'function') { refreshFileTree(); }
+                },
+
                 // Reset settings
                 reset() {
                     this.theme = 'light';
@@ -2892,8 +2937,10 @@
                     this.fontSizeScale = 1;
                     this.contentWidth = 100;
                     this.tocMode = 'floating';
+                    this.hideEmptyDirs = true;
                     this.apply();
                     this.save();
+                    if (typeof refreshFileTree === 'function') { refreshFileTree(); }
                 },
 
                 // Detect whether font is available
@@ -2955,6 +3002,30 @@
 
             function setTocMode(mode) {
                 Settings.setTocMode(mode);
+            }
+
+            function setHideEmptyDirs(checked) {
+                Settings.setHideEmptyDirs(checked);
+            }
+
+            // Re-render the file tree (used when a setting that affects which
+            // nodes are shown changes). Preserves the active-file highlight; the
+            // search view, if active, owns its own rendering so is left alone.
+            function refreshFileTree() {
+                const treeContainer = document.getElementById('tree-container');
+                if (!treeContainer) return;
+                const searchInput = document.getElementById('searchInput');
+                if (searchInput && searchInput.value.trim()) return;
+                treeContainer.innerHTML = '';
+                renderTreeChildren(originalTreeData || treeData, treeContainer);
+                if (currentFile) {
+                    const activeItem = Array.from(treeContainer.querySelectorAll('.tree-item'))
+                        .find(item => item.dataset.path === currentFile);
+                    if (activeItem) {
+                        activeItem.classList.add('active');
+                        if (typeof revealActiveTreeItem === 'function') { revealActiveTreeItem(activeItem); }
+                    }
+                }
             }
 
             function resetSettings() {
@@ -3904,8 +3975,22 @@
                 }
             }
 
+            // Whether a tree node contains any document in its subtree. The tree
+            // only contains supported docs (the server excludes other files), so
+            // any file node counts. Used to hide doc-less folders.
+            function folderHasDocs(node) {
+                if (!node) return false;
+                if (node.is_file) return true;
+                return Array.isArray(node.children) && node.children.some(folderHasDocs);
+            }
+
             // Render document tree
             function renderTree(node, container, level = 0) {
+                // Optionally hide folders with no documents anywhere below them.
+                if (!node.is_file && Settings.hideEmptyDirs && !folderHasDocs(node)) {
+                    return;
+                }
+
                 const nodeDiv = document.createElement('div');
                 nodeDiv.className = 'tree-node';
 
@@ -4308,6 +4393,9 @@
             // Icon shared by the block and inline copy buttons.
             const CODE_COPY_ICON = '<svg viewBox="0 0 16 16" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M11 5.5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12h2"/></svg>';
 
+            // Shown briefly in place of the copy icon after a successful copy.
+            const CODE_CHECK_ICON = '<svg viewBox="0 0 16 16" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 4.5 6.5 11.5 3.5 8.5"/></svg>';
+
             // Injects the styles for the copy buttons once. Kept in JS (rather
             // than the template <style>) so the whole feature is self-contained.
             function ensureCodeCopyStyles() {
@@ -4434,9 +4522,15 @@
                 btn.classList.add('copied');
                 const previous = labelSpan ? labelSpan.textContent : null;
                 if (labelSpan) labelSpan.textContent = 'Copied';
+                // Swap the copy glyph for a checkmark as confirmation. All copy
+                // buttons render CODE_COPY_ICON, so restore to that.
+                const icon = btn.querySelector('svg');
+                if (icon) icon.outerHTML = CODE_CHECK_ICON;
                 setTimeout(() => {
                     btn.classList.remove('copied');
                     if (labelSpan && previous !== null) labelSpan.textContent = previous;
+                    const cur = btn.querySelector('svg');
+                    if (cur) cur.outerHTML = CODE_COPY_ICON;
                 }, 1200);
             }
 
@@ -6897,9 +6991,10 @@
                 const EXPORT_RUNTIME_JS = [
                     '(function(){',
                     'var ICON=\'<svg viewBox="0 0 16 16" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><rect x="5.5" y="5.5" width="8" height="9" rx="1.5"/><path d="M11 5.5V3.5A1.5 1.5 0 0 0 9.5 2h-6A1.5 1.5 0 0 0 2 3.5v7A1.5 1.5 0 0 0 3.5 12h2"/></svg>\';',
+                    'var CHECK=\'<svg viewBox="0 0 16 16" width="1em" height="1em" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13.5 4.5 6.5 11.5 3.5 8.5"/></svg>\';',
                     'function fallback(t){try{var ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();var ok=document.execCommand("copy");document.body.removeChild(ta);return ok;}catch(e){return false;}}',
                     'function copyText(t){if(navigator.clipboard&&navigator.clipboard.writeText){return navigator.clipboard.writeText(t).then(function(){return true;}).catch(function(){return fallback(t);});}return Promise.resolve(fallback(t));}',
-                    'function flash(b,l){b.classList.add("copied");var p=l?l.textContent:null;if(l)l.textContent="Copied";setTimeout(function(){b.classList.remove("copied");if(l&&p!==null)l.textContent=p;},1200);}',
+                    'function flash(b,l){b.classList.add("copied");var p=l?l.textContent:null;if(l)l.textContent="Copied";var i=b.querySelector("svg");if(i)i.outerHTML=CHECK;setTimeout(function(){b.classList.remove("copied");if(l&&p!==null)l.textContent=p;var c=b.querySelector("svg");if(c)c.outerHTML=ICON;},1200);}',
                     // Plain-text of a block quote (see blockquoteCopyText in the
                     // live app): built from a clone so inline-code wrappers don't
                     // make innerText chop the paragraph at every code span.
