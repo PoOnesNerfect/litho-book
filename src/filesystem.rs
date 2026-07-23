@@ -1,3 +1,4 @@
+use ignore::gitignore::{Gitignore, GitignoreBuilder};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
@@ -94,8 +95,46 @@ pub struct TreeStats {
 }
 
 impl DocumentTree {
+    /// Build a gitignore matcher rooted at `docs_dir` so the walker can skip
+    /// ignored trees (e.g. `data/`, `node_modules/`, `target/`). Returns `None`
+    /// when there is nothing to match or when `LITHO_NO_GITIGNORE` is set, in
+    /// which case only VCS internals are skipped. Nested `.gitignore` files are
+    /// not loaded — only the docs-root `.gitignore` and `.git/info/exclude`,
+    /// which is where the heavy top-level excludes live.
+    fn build_ignore(docs_dir: &Path) -> Option<Gitignore> {
+        if std::env::var_os("LITHO_NO_GITIGNORE").is_some() {
+            return None;
+        }
+        let mut builder = GitignoreBuilder::new(docs_dir);
+        let mut added = false;
+        for candidate in [docs_dir.join(".gitignore"), docs_dir.join(".git/info/exclude")] {
+            if candidate.is_file() && builder.add(&candidate).is_none() {
+                added = true;
+            }
+        }
+        if !added {
+            return None;
+        }
+        builder.build().ok()
+    }
+
+    /// Whether the walker should skip descending into `dir`. Always skips VCS
+    /// internals (`.git`, `.jj`) so a repo's object store is never scanned, and
+    /// skips gitignored directories so build/data trees don't get walked (the
+    /// source of the traversal overhead and the transient-file ENOENT warnings).
+    fn should_skip_dir(dir: &Path, ignore: Option<&Gitignore>) -> bool {
+        let name = dir.file_name().and_then(|n| n.to_str()).unwrap_or("");
+        if name == ".git" || name == ".jj" {
+            return true;
+        }
+        ignore
+            .map(|ig| ig.matched(dir, true).is_ignore())
+            .unwrap_or(false)
+    }
+
     /// Create a new document tree from the given directory
     pub fn new(docs_dir: &Path) -> anyhow::Result<Self> {
+        let ignore = Self::build_ignore(docs_dir);
         let mut file_map = HashMap::new();
         let mut search_index = HashMap::new();
         let mut stats = TreeStats {
@@ -129,6 +168,12 @@ impl DocumentTree {
         for entry in entries {
             let path = entry.path();
 
+            // Skip gitignored/VCS directories entirely (see should_skip_dir).
+            if path.is_dir() && Self::should_skip_dir(&path, ignore.as_ref()) {
+                debug!("Skipping ignored directory: {}", path.display());
+                continue;
+            }
+
             // Skip hidden files and non-markdown files, but traverse dot directories.
             if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                 if path.is_file() && name.starts_with('.') {
@@ -148,6 +193,7 @@ impl DocumentTree {
                 &mut file_map,
                 &mut search_index,
                 &mut stats,
+                ignore.as_ref(),
             ) {
                 Ok(child) => children.push(child),
                 Err(e) => {
@@ -187,6 +233,7 @@ impl DocumentTree {
         file_map: &mut HashMap<String, PathBuf>,
         search_index: &mut HashMap<String, Vec<String>>,
         stats: &mut TreeStats,
+        ignore: Option<&Gitignore>,
     ) -> anyhow::Result<FileNode> {
         let name = current_path
             .file_name()
@@ -264,6 +311,12 @@ impl DocumentTree {
         for entry in entries {
             let path = entry.path();
 
+            // Skip gitignored/VCS directories entirely (see should_skip_dir).
+            if path.is_dir() && Self::should_skip_dir(&path, ignore) {
+                debug!("Skipping ignored directory: {}", path.display());
+                continue;
+            }
+
             // Skip hidden files and non-markdown files, but traverse dot directories.
             if let Some(name) = path.file_name().and_then(|n| n.to_str()) {
                 if path.is_file() && name.starts_with('.') {
@@ -277,7 +330,7 @@ impl DocumentTree {
                 }
             }
 
-            match Self::build_tree(&path, base_path, file_map, search_index, stats) {
+            match Self::build_tree(&path, base_path, file_map, search_index, stats, ignore) {
                 Ok(child) => children.push(child),
                 Err(e) => {
                     warn!("Failed to process path {}: {}", path.display(), e);
@@ -561,5 +614,35 @@ mod tests {
             tree.get_file_content(".paw/notes.md").unwrap(),
             "dot directory content"
         );
+    }
+
+    #[test]
+    fn document_tree_skips_gitignored_and_vcs_directories() {
+        let dir = tempfile::tempdir().unwrap();
+        // A root .gitignore excluding a heavy data directory, mirroring a real
+        // project (e.g. nomtier's data/, node_modules/, target/).
+        std::fs::write(dir.path().join(".gitignore"), "data/\nnode_modules/\n").unwrap();
+
+        std::fs::write(dir.path().join("keep.md"), "kept").unwrap();
+
+        let data_dir = dir.path().join("data");
+        std::fs::create_dir(&data_dir).unwrap();
+        std::fs::write(data_dir.join("buried.md"), "should be skipped").unwrap();
+
+        let nm_dir = dir.path().join("node_modules").join("pkg");
+        std::fs::create_dir_all(&nm_dir).unwrap();
+        std::fs::write(nm_dir.join("readme.md"), "dep doc, skipped").unwrap();
+
+        // .git internals must never be scanned even though they aren't gitignored.
+        let git_dir = dir.path().join(".git");
+        std::fs::create_dir(&git_dir).unwrap();
+        std::fs::write(git_dir.join("COMMIT_EDITMSG.md"), "vcs internal").unwrap();
+
+        let tree = DocumentTree::new(dir.path()).unwrap();
+
+        assert_eq!(tree.stats.total_files, 1);
+        assert!(tree.file_map.contains_key("keep.md"));
+        assert!(!tree.file_map.contains_key("data/buried.md"));
+        assert!(!tree.file_map.contains_key("node_modules/pkg/readme.md"));
     }
 }
