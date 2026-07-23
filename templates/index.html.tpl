@@ -7331,7 +7331,18 @@
                     var tag = node.tagName.toLowerCase();
                     var HL = docx.HeadingLevel;
                     var headings = { h1: HL.HEADING_1, h2: HL.HEADING_2, h3: HL.HEADING_3, h4: HL.HEADING_4, h5: HL.HEADING_5, h6: HL.HEADING_6 };
-                    if (headings[tag]) { out.push(new docx.Paragraph({ heading: headings[tag], children: inlineRuns(docx, node) })); return; }
+                    // Extra space *before* each heading (twips; 240 = 12pt) so
+                    // sections are clearly separated, like the rendered markdown.
+                    // Larger gaps for higher-level headings.
+                    var headingSpacing = {
+                        h1: { before: 480, after: 160 },
+                        h2: { before: 380, after: 140 },
+                        h3: { before: 300, after: 120 },
+                        h4: { before: 240, after: 100 },
+                        h5: { before: 220, after: 100 },
+                        h6: { before: 220, after: 100 }
+                    };
+                    if (headings[tag]) { out.push(new docx.Paragraph({ heading: headings[tag], spacing: headingSpacing[tag], children: inlineRuns(docx, node) })); return; }
                     switch (tag) {
                         case 'p': {
                             var pImgs = node.querySelectorAll(':scope > img');
